@@ -4,6 +4,8 @@ SSD is an unified framework for object detection with a single network.
 
 You can use the code to train/evaluate/test for object detection task.
 
+*This repo is still under construction.*
+
 ### Disclaimer
 This is a re-implementation of original SSD which is based on caffe. The official
 repository is available [here](https://github.com/weiliu89/caffe/tree/ssd).
@@ -11,7 +13,6 @@ The arXiv paper is available [here](http://arxiv.org/abs/1512.02325).
 
 This example is intended for reproducing the nice detector while fully utilize the
 remarkable traits of MXNet. However:
-* The performance is slightly different with the official caffe version.
 * The model is not compatible with caffe version due to the implementation details.
 
 ### Getting started
@@ -28,7 +29,7 @@ Remember to enable CUDA if you want to be able to train, since CPU training is
 insanely slow. Using CUDNN is not fully tested but should be fine.
 
 ### Try the demo
-* Download the pretrained model: , and extract to `model/` directory.
+* Download the pretrained model: `to_be_added`, and extract to `model/` directory.
 * Run `python demo.py`
 * Check `python demo.py --help` for more options.
 
