@@ -75,7 +75,8 @@ def convert_pretrained(name, args):
 def train_net(net, dataset, image_set, year, devkit_path, batch_size,
                data_shape, mean_pixels, resume, pretrained, epoch, prefix,
                ctx, begin_epoch, end_epoch, frequent, learning_rate,
-               momentum, weight_decay, val_set, val_year):
+               momentum, weight_decay, val_set, val_year,
+               iter_monitor=0, log_file=None):
     """
     Wrapper for training module
 
@@ -132,6 +133,9 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
     logging.basicConfig()
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
+    if log_file:
+        fh = logging.FileHandler(log_file)
+        logger.addHandler(fh)
 
     # check args
     if isinstance(data_shape, int):
@@ -217,6 +221,8 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
                       'lr_scheduler':mx.lr_scheduler.FactorScheduler(10000, 0.9),
                       'clip_gradient':10,
                       'rescale_grad': 1.0}
+    monitor = mx.mon.Monitor(iter_monitor, pattern=".*") if iter_monitor > 0 else None
+
     mod.fit(train_iter,
             eval_data=val_iter,
             eval_metric=MultiBoxMetric(),
@@ -229,4 +235,5 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
             initializer=CustomInitializer(factor_type="in", magnitude=2.34),
             arg_params=args,
             aux_params=auxs,
-            allow_missing=True)
+            allow_missing=True,
+            monitor=monitor)

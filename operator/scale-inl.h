@@ -22,18 +22,13 @@ namespace op {
 namespace scale_enum {
 enum ScaleOpInputs {kData, kWeight};
 enum ScaleOpOutputs {kOut};
-enum ScaleOpAuxiliary {kInit};
 enum ScaleOpResource {kTempSpace};
 enum ScaleOpType {kInstance, kChannel, kSpatial};
 }  // scale_enum
 
 struct ScaleParam : public dmlc::Parameter<ScaleParam> {
-  float init_scale;
-  bool no_bias;
   int mode;
   DMLC_DECLARE_PARAMETER(ScaleParam) {
-    DMLC_DECLARE_FIELD(init_scale).set_default(1.f)
-    .describe("Inital scaling paramter");
     DMLC_DECLARE_FIELD(mode)
     .add_enum("instance", scale_enum::kInstance)
     .add_enum("spatial", scale_enum::kSpatial)
@@ -63,25 +58,7 @@ class ScaleOp : public Operator {
     using namespace mshadow::expr;
     CHECK_EQ(in_data.size(), 2);
     CHECK_EQ(out_data.size(), 1);
-    CHECK_EQ(aux_args.size(), 1);
     Stream<xpu> *s = ctx.get_stream<xpu>();
-
-    // init scale for the first time
-    if (ctx.is_train) {
-      Tensor<xpu, 1, DType> init_status = aux_args[scale_enum::kInit]
-        .get<xpu, 1, DType>(s);
-      Tensor<cpu, 1, DType> flag = ctx.requested[scale_enum::kTempSpace]
-        .get_host_space_typed<1, DType>(Shape1(1));
-      Copy(flag, init_status, init_status.stream_);
-      if (flag.dptr_[0] != 1) {
-        // if not initialized, do init
-        Tensor<xpu, 1, DType> init_weight = in_data[scale_enum::kWeight]
-          .get<xpu, 1, DType>(s);
-        init_weight = param_.init_scale;
-        init_status = 1;
-      }
-    }
-
     TShape orig_shape = in_data[scale_enum::kData].shape_;
     index_t nbatch = orig_shape[0];
     if (param_.mode == scale_enum::kInstance) {
@@ -218,10 +195,6 @@ class ScaleProp : public OperatorProperty {
     return {"data", "scale"};
   }
 
-  std::vector<std::string> ListAuxiliaryStates() const override {
-    return {"init"};
-  }
-
   std::vector<std::string> ListOutputs() const override {
     return {"output"};
   }
@@ -256,8 +229,6 @@ class ScaleProp : public OperatorProperty {
   }
   out_shape->clear();
   out_shape->push_back(dshape);
-  aux_shape->clear();
-  aux_shape->push_back(Shape1(1));
   return true;
   }
 

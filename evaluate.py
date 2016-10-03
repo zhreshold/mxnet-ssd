@@ -21,10 +21,10 @@ def parse_args():
                         help='evaluation batch size')
     parser.add_argument('--epoch', dest='epoch', help='epoch of pretrained model',
                         default=112, type=int)
-    parser.add_argument('--prefix', dest='prefix', help='new model prefix',
+    parser.add_argument('--prefix', dest='prefix', help='load model prefix',
                         default=os.path.join(os.getcwd(), 'model', 'ssd'), type=str)
-    parser.add_argument('--gpu', dest='gpu_id', help='GPU device to train with',
-                        default=0, type=int)
+    parser.add_argument('--gpus', dest='gpu_id', help='GPU devices to evaluate with',
+                        default='0', type=str)
     parser.add_argument('--cpu', dest='cpu', help='use cpu to evaluate',
                         action='store_true')
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
@@ -40,7 +40,10 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    ctx = mx.cpu() if args.cpu else mx.gpu(args.gpu_id)
+    if args.cpu:
+        ctx = mx.cpu()
+    else:
+        ctx = [mx.gpu(int(i)) for i in args.gpu_id.split(',')]
     evaluate_net(args.network, args.dataset, args.devkit_path,
                  (args.mean_r, args.mean_g, args.mean_b), args.data_shape,
                  args.prefix, args.epoch, ctx, year=args.year,

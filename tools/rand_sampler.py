@@ -42,6 +42,8 @@ class RandSampler(object):
         assert max_sample >= 0
         self.max_sample = int(max_sample)
 
+        self.config = {'gt_constraint' : 'center'}
+
     def sample(self, label):
         """
         generate random cropping boxes according to parameters
@@ -72,7 +74,7 @@ class RandSampler(object):
             rand_box = (left, top, left + width, top + height)
             valid_mask = np.where(label[:, 0] > -1)[0]
             gt = label[valid_mask, :]
-            ious = self._check_satisfy(rand_box, label)
+            ious = self._check_satisfy(rand_box, gt)
             if ious is not None:
                 # transform gt labels after crop, discard bad ones
                 l, t, r, b = rand_box
@@ -81,11 +83,6 @@ class RandSampler(object):
                 new_height = b - t
                 for i in range(valid_mask.size):
                     if ious[i] > 0:
-                        # check constraint
-                        if gt[i, 1] < l or gt[i, 2] < t or gt[i, 3] > r or gt[i, 4] > b:
-                            # crop ground-truth not allowed, just skip
-                            new_gt_boxes = []
-                            break
                         xmin = max(0., (gt[i, 1] - l) / new_width)
                         ymin = max(0., (gt[i, 2] - t) / new_height)
                         xmax = min(1., (gt[i, 3] - l) / new_width)
@@ -132,4 +129,18 @@ class RandSampler(object):
         max_iou = np.amax(ious)
         if max_iou < self.min_overlap:
             return None
+        # check ground-truth constraint
+        if self.config['gt_constraint'] == 'center':
+            for i in range(ious.shape[0]):
+                if ious[i] > 0:
+                    gt_x = (gt_boxes[i, 1] + gt_boxes[i, 3]) / 2.0
+                    gt_y = (gt_boxes[i, 2] + gt_boxes[i, 4]) / 2.0
+                    if gt_x < l or gt_x > r or gt_y < t or gt_y > b:
+                        return None
+        elif self.config['gt_constraint'] == 'corner':
+            for i in range(ious.shape[0]):
+                if ious[i] > 0:
+                    if gt_boxes[i, 1] < l or gt_boxes[i, 3] > r \
+                        or gt_boxes[i, 2] < t or gt_boxes[i, 4] > b:
+                        return None
         return ious

@@ -19,17 +19,20 @@ class Detector(object):
         input data resize shape
     mean_pixels : tuple of float
         (mean_r, mean_g, mean_b)
+    batch_size : int
+        run detection with batch size
     ctx : mx.ctx
         device to use, if None, use mx.cpu() as default context
     """
-    def __init__(self, symbol, model_prefix, epoch, data_shape, mean_pixels, ctx=None):
+    def __init__(self, symbol, model_prefix, epoch, data_shape, mean_pixels, \
+                 batch_size=1, ctx=None):
         self.ctx = ctx
         if self.ctx is None:
             self.ctx = mx.cpu()
         _, args, auxs = mx.model.load_checkpoint(model_prefix, epoch)
         self.mod = mx.mod.Module(symbol, context=ctx)
         self.data_shape = data_shape
-        self.mod.bind(data_shapes=[('data', (1, 3, data_shape, data_shape))])
+        self.mod.bind(data_shapes=[('data', (batch_size, 3, data_shape, data_shape))])
         self.mod.set_params(args, auxs)
         self.data_shape = data_shape
         self.mean_pixels = mean_pixels
@@ -49,7 +52,6 @@ class Detector(object):
         """
         if not isinstance(det_iter, mx.io.PrefetchingIter):
             det_iter = mx.io.PrefetchingIter(det_iter)
-        self.mod.bind(det_iter.provide_data, for_training=False, force_rebind=True)
         detections = self.mod.predict(det_iter).asnumpy()
         result = []
         for i in range(detections.shape[0]):

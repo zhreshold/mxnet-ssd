@@ -19,7 +19,7 @@ cfg.TRAIN.RAND_MIRROR = True
 cfg.TRAIN.INIT_SHUFFLE = True
 cfg.TRAIN.EPOCH_SHUFFLE = True # shuffle training list after each epoch
 cfg.TRAIN.RAND_SEED = None
-cfg.TRAIN.RESIZE_EPOCH = 1 # save every N epoch
+cfg.TRAIN.RESIZE_EPOCH = 1 # save model every N epoch
 
 
 # validation

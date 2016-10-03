@@ -12,6 +12,10 @@ class CustomInitializer(mx.init.Xavier):
         if name.endswith('init'):
             self._init_zero(name, arr)
         elif name.endswith('scale'):
-            self._init_one(name, arr)
+            try:
+                s = float(name[:-6].split('_')[-1])  # read scale from name
+                arr[:] = s
+            except:
+                self._init_one(name, arr)
         else:
             raise ValueError('Unknown initialization pattern for %s' % name)

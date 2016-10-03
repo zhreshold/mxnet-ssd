@@ -52,7 +52,7 @@ def evaluate_net(net, dataset, devkit_path, mean_pixels, data_shape, model_prefi
         net = importlib.import_module("symbol_" + net) \
             .get_symbol(imdb.num_classes, nms_thresh)
         model_prefix += "_" + str(data_shape)
-        detector = Detector(net, model_prefix, epoch, data_shape, mean_pixels, ctx)
+        detector = Detector(net, model_prefix, epoch, data_shape, mean_pixels, batch_size, ctx)
         logger.info("Start evaluation with {} images, be patient...".format(imdb.num_images))
         detections = detector.detect(data_iter)
         imdb.evaluate_detections(detections)

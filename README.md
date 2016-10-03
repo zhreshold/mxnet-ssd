@@ -22,22 +22,40 @@ You can install them via pip or package manegers, such as `apt-get`:
 sudo apt-get install python-opencv python-matplotlib python-numpy
 sudo pip install easydict
 ```
-* Build MXNet with extra layers. Follow the official instructions
+* Clone this repo:
+```
+# if you don't have git, install it via apt or homebrew/yum based on your system
+sudo apt-get install git
+# cd where you would like to clone this repo
+cd ~
+git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
+# make sure you clone this with --recursive
+# if not done correctly or you are using downloaded repo, pull them all via:
+# git submodule update --recursive --init
+cd mxnet-ssd/mxnet
+```
+* Build MXNet with extra layers: Follow the official instructions
 [here](http://mxnet.readthedocs.io/en/latest/how_to/build.html), and add extra
-layers in `config.mk` by pointing `EXTRA_OPERATORS = example/ssd/operator/`.
+layers in `config.mk` by pointing `EXTRA_OPERATORS = ../operator/`.
 Remember to enable CUDA if you want to be able to train, since CPU training is
 insanely slow. Using CUDNN is not fully tested but should be fine.
 
 ### Try the demo
 * Download the pretrained model: `to_be_added`, and extract to `model/` directory.
-* Run `python demo.py`
+* Run
+```
+# cd /path/to/mxnet-ssd
+python demo.py
+# play with examples:
+python demo.py --images ./data/demo/dog.jpg --thresh 0.3
+```
 * Check `python demo.py --help` for more options.
 
 ### Train the model
 This example only covers training on Pascal VOC dataset. Other datasets should
 be easily supported by adding subclass derived from class `Imdb` in `dataset/imdb.py`.
 See example of `dataset/pascal_voc.py` for details.
-* Download the converted vgg16_reduced model: , put `.param` and `.json` files
+* Download the converted pretrained `vgg16_reduced` model: , put `.param` and `.json` files
 into `model/` directory by default.
 * Download the PASCAL VOC dataset, skip this step if you already have one.
 ```
@@ -64,5 +82,10 @@ Check `python train.py --help` for more training options. For example, if you ha
 python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.005
 ```
 
-### Note
-* First run might take a while to initialize, the reason is still unknown.
+### Evalute trained model
+Again, currently we only support evaluation on PASCAL VOC
+Use:
+```
+# cd /path/to/mxnet-ssd
+python evaluate.py --gpus 0,1 --batch-size 128 --epoch 100
+```

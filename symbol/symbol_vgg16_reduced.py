@@ -90,28 +90,28 @@ def get_symbol_train(num_classes=20):
     # drop7 = mx.symbol.Dropout(data=relu7, p=0.5, name="drop7")
 
     ### ssd extra layers ###
-    relu8_1 = conv_act_layer(relu7, "8_1", 256, kernel=(1,1), pad=(0,0), \
+    conv8_1, relu8_1 = conv_act_layer(relu7, "8_1", 256, kernel=(1,1), pad=(0,0), \
         stride=(1,1), act_type="relu", use_batchnorm=False)
-    relu8_2 = conv_act_layer(relu8_1, "8_2", 512, kernel=(3,3), pad=(1,1), \
+    conv8_2, relu8_2 = conv_act_layer(relu8_1, "8_2", 512, kernel=(3,3), pad=(1,1), \
         stride=(2,2), act_type="relu", use_batchnorm=False)
-    relu9_1 = conv_act_layer(relu8_2, "9_1", 128, kernel=(1,1), pad=(0,0), \
+    conv9_1, relu9_1 = conv_act_layer(relu8_2, "9_1", 128, kernel=(1,1), pad=(0,0), \
         stride=(1,1), act_type="relu", use_batchnorm=False)
-    relu9_2 = conv_act_layer(relu9_1, "9_2", 256, kernel=(3,3), pad=(1,1), \
+    conv9_2, relu9_2 = conv_act_layer(relu9_1, "9_2", 256, kernel=(3,3), pad=(1,1), \
         stride=(2,2), act_type="relu", use_batchnorm=False)
-    relu10_1 = conv_act_layer(relu9_2, "10_1", 128, kernel=(1,1), pad=(0,0), \
+    conv10_1, relu10_1 = conv_act_layer(relu9_2, "10_1", 128, kernel=(1,1), pad=(0,0), \
         stride=(1,1), act_type="relu", use_batchnorm=False)
-    relu10_2 = conv_act_layer(relu10_1, "10_2", 256, kernel=(3,3), pad=(1,1), \
+    conv10_2, relu10_2 = conv_act_layer(relu10_1, "10_2", 256, kernel=(3,3), pad=(1,1), \
         stride=(2,2), act_type="relu", use_batchnorm=False)
     # global Pooling
     pool10 = mx.symbol.Pooling(data=relu10_2, pool_type="avg",
         global_pool=True, kernel=(1,1), name='pool10')
 
     # specific parameters for VGG16 network
-    from_layers = [relu4_3, relu7, relu8_2, relu9_2, relu10_2, pool10]
+    from_layers = [conv4_3, conv7, conv8_2, conv9_2, conv10_2, pool10]
     sizes = [[.1], [.2,.276], [.38, .461], [.56, .644], [.74, .825], [.92, 1.01]]
     ratios = [[1,2,.5], [1,2,3,.5,1./3], [1,2,3,.5,1./3], [1,2,3,.5,1./3], \
         [1,2,3,.5,1./3], [1,2,3,.5,1./3]]
-    normalizations = [20, -1, -1, -1, -1, -1]
+    normalizations = [20, 20, -1, -1, -1, -1]
 
     loc_preds, cls_preds, anchor_boxes = multibox_layer(from_layers, \
         num_classes, sizes=sizes, ratios=ratios, normalization=normalizations, \
@@ -131,8 +131,8 @@ def get_symbol_train(num_classes=20):
         normalization='valid', name="cls_prob")
     loc_loss_ = mx.symbol.smooth_l1(name="loc_loss_", \
         data=loc_target_mask * (loc_preds - loc_target), scalar=1.0)
-    loc_loss = mx.symbol.MakeLoss(*[loc_loss_, loc_target_mask], \
-        grad_scale=1., normalization='valid', name="loc_loss")
+    loc_loss = mx.symbol.MakeLoss(loc_loss_, grad_scale=1., \
+        normalization='valid', name="loc_loss")
 
     # monitoring training status
     cls_label = mx.symbol.MakeLoss(data=cls_target, grad_scale=0, name="cls_label")

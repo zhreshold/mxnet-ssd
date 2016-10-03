@@ -24,15 +24,19 @@ def conv_act_layer(from_layer, name, num_filter, kernel=(1,1), pad=(0,0), \
         activation type, can be relu...
     use_batchnorm : bool
         whether to use batch normalization
+
+    Returns:
+    ----------
+    (conv, relu) mx.Symbols
     """
     assert not use_batchnorm, "batchnorm not yet supported"
-    l = mx.symbol.Convolution(data=from_layer, kernel=kernel, pad=pad, \
+    conv = mx.symbol.Convolution(data=from_layer, kernel=kernel, pad=pad, \
         stride=stride, num_filter=num_filter, name="conv{}".format(name))
-    l = mx.symbol.Activation(data=l, act_type=act_type, \
+    relu = mx.symbol.Activation(data=conv, act_type=act_type, \
         name="{}{}".format(act_type, name))
     if use_batchnorm:
-        l = mx.symbol.BatchNorm(data=l, name="bn{}".format(name))
-    return l
+        relu = mx.symbol.BatchNorm(data=relu, name="bn{}".format(name))
+    return conv, relu
 
 def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
                     ratios=[1], normalization=-1, clip=True, interm_layer=0):
@@ -104,8 +108,8 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
         if normalization[k] > 0:
             from_layer = mx.symbol.L2Normalization(data=from_layer, \
                 mode="channel", name="{}_norm".format(from_name))
-            from_layer = mx.symbol.Scale(data=from_layer, init_scale=normalization[k], \
-                mode="spatial", name="{}_scale".format(from_name))
+            from_layer = mx.symbol.Scale(data=from_layer, mode="spatial", \
+                name="{}_scale_{}".format(from_name, normalization[k]))
         if interm_layer > 0:
             from_layer = mx.symbol.Convolution(data=from_layer, kernel=(3,3), \
                 stride=(1,1), pad=(1,1), num_filter=interm_layer, \

@@ -2,6 +2,7 @@
 data/*
 !data/demo/
 model/*
+!model/README.md
 cache/*
 
 # Compiled Object files

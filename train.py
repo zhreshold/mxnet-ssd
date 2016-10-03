@@ -53,6 +53,10 @@ def parse_args():
                         help='green mean value')
     parser.add_argument('--mean-b', dest='mean_b', type=float, default=104,
                         help='blue mean value')
+    parser.add_argument('--log', dest='log_file', type=str, default="train.log",
+                        help='save training log to file')
+    parser.add_argument('--monitor', dest='monitor', type=int, default=0,
+                        help='log network parameters every N iters if larger than 0')
     args = parser.parse_args()
     return args
 
@@ -66,4 +70,4 @@ if __name__ == '__main__':
               args.resume, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
-              args.val_image_set, args.val_year)
+              args.val_image_set, args.val_year, args.monitor, args.log_file)
