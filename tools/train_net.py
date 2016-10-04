@@ -76,6 +76,7 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
                data_shape, mean_pixels, resume, pretrained, epoch, prefix,
                ctx, begin_epoch, end_epoch, frequent, learning_rate,
                momentum, weight_decay, val_set, val_year,
+               lr_refactor_epoch, lr_refactor_ratio,
                iter_monitor=0, log_file=None):
     """
     Wrapper for training module
@@ -124,6 +125,14 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
         similar to image_set, used for validation
     val_year : str
         similar to year, used for validation
+    lr_refactor_epoch : int
+        number of epoch to change learning rate
+    lr_refactor_ratio : float
+        new_lr = old_lr * lr_refactor_ratio
+    iter_monitor : int
+        if larger than 0, will print weights/gradients every iter_monitor iters
+    log_file : str
+        log to file if not None
 
     Returns:
     ---------
@@ -182,8 +191,9 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
     net = importlib.import_module("symbol_" + net).get_symbol_train(imdb.num_classes)
 
     # define layers with fixed weight/bias
-    fixed_param_names = [name for name in net.list_arguments() \
-        if name.startswith('conv1_') or name.startswith('conv2_')]
+    # fixed_param_names = [name for name in net.list_arguments() \
+    #     if name.startswith('conv1_') or name.startswith('conv2_')]
+    fixed_param_names = None
 
     # load pretrained or resume from previous state
     ctx_str = '('+ ','.join([str(c) for c in ctx]) + ')'
@@ -215,10 +225,12 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
     # fit
     batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
     epoch_end_callback = mx.callback.do_checkpoint(prefix)
+    iter_refactor = lr_refactor_epoch * imdb.num_images / train_iter.batch_size
+    lr_scheduler = mx.lr_scheduler.FactorScheduler(iter_refactor, lr_refactor_ratio)
     optimizer_params={'learning_rate':learning_rate,
                       'momentum':momentum,
                       'wd':weight_decay,
-                      'lr_scheduler':mx.lr_scheduler.FactorScheduler(10000, 0.9),
+                      'lr_scheduler':lr_scheduler,
                       'clip_gradient':10,
                       'rescale_grad': 1.0}
     monitor = mx.mon.Monitor(iter_monitor, pattern=".*") if iter_monitor > 0 else None

@@ -33,7 +33,8 @@ def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx, nms_thresh=0.
     """
     sys.path.append(os.path.join(os.getcwd(), 'symbol'))
     net = importlib.import_module("symbol_" + net).get_symbol(len(CLASSES), nms_thresh)
-    detector = Detector(net, prefix + "_" + str(data_shape), epoch, data_shape, mean_pixels, ctx)
+    detector = Detector(net, prefix + "_" + str(data_shape), epoch, \
+        data_shape, mean_pixels, ctx=ctx)
     return detector
 
 def parse_args():
