@@ -48,7 +48,7 @@ def parse_args():
     parser.add_argument('--ext', dest='extension', help='image extension, optional',
                         type=str, nargs='?')
     parser.add_argument('--epoch', dest='epoch', help='epoch of trained model',
-                        default=200, type=int)
+                        default=0, type=int)
     parser.add_argument('--prefix', dest='prefix', help='trained model prefix',
                         default=os.path.join(os.getcwd(), 'model', 'ssd'), type=str)
     parser.add_argument('--cpu', dest='cpu', help='(override GPU) use CPU to detect',
@@ -63,7 +63,7 @@ def parse_args():
                         help='green mean value')
     parser.add_argument('--mean-b', dest='mean_b', type=float, default=104,
                         help='blue mean value')
-    parser.add_argument('--thresh', dest='thresh', type=float, default=0.6,
+    parser.add_argument('--thresh', dest='thresh', type=float, default=0.5,
                         help='object visualize score threshold, default 0.6')
     parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.5,
                         help='non-maximum suppression threshold, default 0.5')

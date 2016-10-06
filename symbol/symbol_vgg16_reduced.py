@@ -51,7 +51,7 @@ def get_symbol_train(num_classes=20):
     relu3_3 = mx.symbol.Activation(data=conv3_3, act_type="relu", name="relu3_3")
     pool3 = mx.symbol.Pooling(
         data=relu3_3, pool_type="max", kernel=(2, 2), stride=(2, 2), \
-        pad=(1,1), name="pool3")
+        pooling_convention="full", name="pool3")
     # group 4
     conv4_1 = mx.symbol.Convolution(
         data=pool3, kernel=(3, 3), pad=(1, 1), num_filter=512, name="conv4_1")

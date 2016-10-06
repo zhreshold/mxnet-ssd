@@ -4,16 +4,21 @@ SSD is an unified framework for object detection with a single network.
 
 You can use the code to train/evaluate/test for object detection task.
 
-*This repo is still under construction.*
-
 ### Disclaimer
 This is a re-implementation of original SSD which is based on caffe. The official
 repository is available [here](https://github.com/weiliu89/caffe/tree/ssd).
 The arXiv paper is available [here](http://arxiv.org/abs/1512.02325).
 
 This example is intended for reproducing the nice detector while fully utilize the
-remarkable traits of MXNet. However:
-* The model is not compatible with caffe version due to the implementation details.
+remarkable traits of MXNet.
+* The model is fully compatible with caffe version due to the implementation details.
+* Model converter from caffe is available, I'll release it once I can convert any symbol other than VGG16.
+
+### Demo results
+![demo1](https://cloud.githubusercontent.com/assets/3307514/19171057/8e1a0cc4-8be0-11e6-9d8f-088c25353b40.png)
+![demo2](https://cloud.githubusercontent.com/assets/3307514/19171063/91ec2792-8be0-11e6-983c-773bd6868fa8.png)
+![demo3](https://cloud.githubusercontent.com/assets/3307514/19171086/a9346842-8be0-11e6-8011-c17716b22ad3.png)
+
 
 ### Getting started
 * You will need python modules: `easydict`, `cv2`, `matplotlib` and `numpy`.
@@ -34,20 +39,19 @@ git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
 # git submodule update --recursive --init
 cd mxnet-ssd/mxnet
 ```
-* Build MXNet with extra layers: Follow the official instructions
-[here](http://mxnet.readthedocs.io/en/latest/how_to/build.html), and add extra
-layers in `config.mk` by pointing `EXTRA_OPERATORS = ../operator/`.
+* Build MXNet: Follow the official instructions
+[here](http://mxnet.readthedocs.io/en/latest/how_to/build.html).
 Remember to enable CUDA if you want to be able to train, since CPU training is
-insanely slow. Using CUDNN is not fully tested but should be fine.
+insanely slow. Using CUDNN is optional, it's not fully tested but should be fine.
 
 ### Try the demo
-* Download the pretrained model: `to_be_added`, and extract to `model/` directory.
+* Download the pretrained model: [`ssd_300_voc_0712.zip`](https://dl.dropboxusercontent.com/u/39265872/ssd_300_voc0712.zip), and extract to `model/` directory. (This model is converted from VGG_VOC0712_SSD_300x300_iter_60000.caffemodel provided by paper author).
 * Run
 ```
 # cd /path/to/mxnet-ssd
 python demo.py
 # play with examples:
-python demo.py --images ./data/demo/dog.jpg --thresh 0.3
+python demo.py --epoch 0 --images ./data/demo/dog.jpg --thresh 0.3
 ```
 * Check `python demo.py --help` for more options.
 
@@ -55,7 +59,7 @@ python demo.py --images ./data/demo/dog.jpg --thresh 0.3
 This example only covers training on Pascal VOC dataset. Other datasets should
 be easily supported by adding subclass derived from class `Imdb` in `dataset/imdb.py`.
 See example of `dataset/pascal_voc.py` for details.
-* Download the converted pretrained `vgg16_reduced` model: , put `.param` and `.json` files
+* Download the converted pretrained `vgg16_reduced` model [here](https://dl.dropboxusercontent.com/u/39265872/vgg16_reduced.zip), unzip `.param` and `.json` files
 into `model/` directory by default.
 * Download the PASCAL VOC dataset, skip this step if you already have one.
 ```
@@ -75,10 +79,11 @@ in the same `VOCdevkit` folder.
 `ln -s /path/to/VOCdevkit /path/to/this_example/data/VOCdevkit`.
 Use hard link instead of copy could save us a bit disk space.
 * Start training: `python train.py`
-* By default, this example will use `batch-size=32` and `learning_rate=0.004`.
+* By default, this example will use `batch-size=32` and `learning_rate=0.002`.
 You might need to change the parameters a bit if you have different configurations.
 Check `python train.py --help` for more training options. For example, if you have 4 GPUs, use:
 ```
+# note that a perfect training parameter set is yet to be found for multi-gpu
 python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.005
 ```
 

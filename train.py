@@ -41,7 +41,7 @@ def parse_args():
                         default=20, type=int)
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                         help='set image shape')
-    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.001,
+    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.002,
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
                         help='momentum')
