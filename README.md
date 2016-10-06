@@ -11,7 +11,7 @@ The arXiv paper is available [here](http://arxiv.org/abs/1512.02325).
 
 This example is intended for reproducing the nice detector while fully utilize the
 remarkable traits of MXNet.
-* The model is fully compatible with caffe version due to the implementation details.
+* The model is fully compatible with caffe version.
 * Model converter from caffe is available, I'll release it once I can convert any symbol other than VGG16.
 
 ### Demo results
