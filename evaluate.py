@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=32,
                         help='evaluation batch size')
     parser.add_argument('--epoch', dest='epoch', help='epoch of pretrained model',
-                        default=112, type=int)
+                        default=0, type=int)
     parser.add_argument('--prefix', dest='prefix', help='load model prefix',
                         default=os.path.join(os.getcwd(), 'model', 'ssd'), type=str)
     parser.add_argument('--gpus', dest='gpu_id', help='GPU devices to evaluate with',
@@ -35,6 +35,10 @@ def parse_args():
                         help='green mean value')
     parser.add_argument('--mean-b', dest='mean_b', type=float, default=104,
                         help='blue mean value')
+    parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.45,
+                        help='non-maximum suppression threshold')
+    parser.add_argument('--force', dest='force_nms', type=bool, default=False,
+                        help='force non-maximum suppression on different class')
     args = parser.parse_args()
     return args
 
@@ -47,4 +51,5 @@ if __name__ == '__main__':
     evaluate_net(args.network, args.dataset, args.devkit_path,
                  (args.mean_r, args.mean_g, args.mean_b), args.data_shape,
                  args.prefix, args.epoch, ctx, year=args.year,
-                 sets=args.eval_set, batch_size=args.batch_size)
+                 sets=args.eval_set, batch_size=args.batch_size,
+                 nms_thresh=args.nms_thresh, force_nms=args.force_nms)

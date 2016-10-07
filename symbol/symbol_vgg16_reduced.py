@@ -141,7 +141,7 @@ def get_symbol_train(num_classes=20):
     out = mx.symbol.Group([cls_prob, loc_loss, cls_label])
     return out
 
-def get_symbol(num_classes=20, num_thresh=0.5, force_suppress=True):
+def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=True):
     """
     Single-shot multi-box detection with VGG 16 layers ConvNet
     This is a modified version, with fc6/fc7 layers replaced by conv layers
@@ -170,6 +170,6 @@ def get_symbol(num_classes=20, num_thresh=0.5, force_suppress=True):
     # group output
     # out = mx.symbol.Group([loc_preds, cls_preds, anchor_boxes])
     out = mx.symbol.MultiBoxDetection(*[cls_prob, loc_preds, anchor_boxes], \
-        name="detection", nms_threshold=num_thresh, force_suppress=force_suppress,
+        name="detection", nms_threshold=nms_thresh, force_suppress=force_suppress,
         variances=(0.1, 0.1, 0.2, 0.2))
     return out

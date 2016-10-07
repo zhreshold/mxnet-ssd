@@ -13,6 +13,7 @@ This example is intended for reproducing the nice detector while fully utilize t
 remarkable traits of MXNet.
 * The model is fully compatible with caffe version.
 * Model converter from caffe is available, I'll release it once I can convert any symbol other than VGG16.
+* The result is almost identical to the original version. However, due to different non-maximum suppression Implementation, the results might differ slightly.
 
 ### Demo results
 ![demo1](https://cloud.githubusercontent.com/assets/3307514/19171057/8e1a0cc4-8be0-11e6-9d8f-088c25353b40.png)
@@ -51,7 +52,7 @@ insanely slow. Using CUDNN is optional, it's not fully tested but should be fine
 # cd /path/to/mxnet-ssd
 python demo.py
 # play with examples:
-python demo.py --epoch 0 --images ./data/demo/dog.jpg --thresh 0.3
+python demo.py --epoch 0 --images ./data/demo/dog.jpg --thresh 0.5
 ```
 * Check `python demo.py --help` for more options.
 
@@ -76,21 +77,27 @@ tar -xvf VOCtest_06-Nov-2007.tar
 The suggested directory structure is to store `VOC2007` and `VOC2012` directories
 in the same `VOCdevkit` folder.
 * Then link `VOCdevkit` folder to `data/VOCdevkit` by default:
-`ln -s /path/to/VOCdevkit /path/to/this_example/data/VOCdevkit`.
+```
+ln -s /path/to/VOCdevkit /path/to/this_example/data/VOCdevkit
+```
 Use hard link instead of copy could save us a bit disk space.
-* Start training: `python train.py`
+* Start training:
+```
+python train.py
+```
 * By default, this example will use `batch-size=32` and `learning_rate=0.002`.
 You might need to change the parameters a bit if you have different configurations.
 Check `python train.py --help` for more training options. For example, if you have 4 GPUs, use:
 ```
-# note that a perfect training parameter set is yet to be found for multi-gpu
-python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.005
+# note that a perfect training parameter set is yet to be discovered for multi-gpu
+python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.0005
 ```
+* Memory usage: MXNet is very memory efficient, training on `VGG16_reduced` model with `batch-size` 32 takes around 4684MB without CUDNN.
 
 ### Evalute trained model
 Again, currently we only support evaluation on PASCAL VOC
 Use:
 ```
 # cd /path/to/mxnet-ssd
-python evaluate.py --gpus 0,1 --batch-size 128 --epoch 100
+python evaluate.py --gpus 0,1 --batch-size 128 --epoch 0
 ```

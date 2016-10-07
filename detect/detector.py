@@ -58,7 +58,6 @@ class Detector(object):
             det = detections[i, :, :]
             res = det[np.where(det[:, 0] >= 0)[0]]
             result.append(res)
-        # print result
         return result
 
     def im_detect(self, im_list, root_dir=None, extension=None):

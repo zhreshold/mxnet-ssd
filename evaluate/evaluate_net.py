@@ -7,8 +7,9 @@ from detect.detector import Detector
 from config.config import cfg
 import logging
 
-def evaluate_net(net, dataset, devkit_path, mean_pixels, data_shape, model_prefix, epoch, ctx,
-                 year=None, sets='test', batch_size=1, nms_thresh=0.5):
+def evaluate_net(net, dataset, devkit_path, mean_pixels, data_shape,
+                 model_prefix, epoch, ctx, year=None, sets='test',
+                 batch_size=1, nms_thresh=0.5, force_nms=False):
     """
     Evaluate entire dataset, basically simple wrapper for detections
 
@@ -36,6 +37,8 @@ def evaluate_net(net, dataset, devkit_path, mean_pixels, data_shape, model_prefi
         using batch_size for evaluation
     nms_thresh : float
         non-maximum suppression threshold
+    force_nms : bool
+        force suppress different categories
     """
     # set up logger
     logging.basicConfig()
@@ -50,7 +53,7 @@ def evaluate_net(net, dataset, devkit_path, mean_pixels, data_shape, model_prefi
             rand_samplers=[], rand_mirror=False, is_train=False, shuffle=False)
         sys.path.append(os.path.join(cfg.ROOT_DIR, 'symbol'))
         net = importlib.import_module("symbol_" + net) \
-            .get_symbol(imdb.num_classes, nms_thresh)
+            .get_symbol(imdb.num_classes, nms_thresh, force_nms)
         model_prefix += "_" + str(data_shape)
         detector = Detector(net, model_prefix, epoch, data_shape, mean_pixels, batch_size, ctx)
         logger.info("Start evaluation with {} images, be patient...".format(imdb.num_images))

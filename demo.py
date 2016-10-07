@@ -12,7 +12,8 @@ CLASSES = ('aeroplane', 'bicycle', 'bird', 'boat',
            'motorbike', 'person', 'pottedplant',
            'sheep', 'sofa', 'train', 'tvmonitor')
 
-def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx, nms_thresh=0.5):
+def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx,
+                 nms_thresh=0.5, force_nms=True):
     """
     wrapper for initialize a detector
 
@@ -30,9 +31,12 @@ def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx, nms_thresh=0.
         mean pixel values (R, G, B)
     ctx : mx.ctx
         running context, mx.cpu() or mx.gpu(?)
+    force_nms : bool
+        force suppress different categories
     """
     sys.path.append(os.path.join(os.getcwd(), 'symbol'))
-    net = importlib.import_module("symbol_" + net).get_symbol(len(CLASSES), nms_thresh)
+    net = importlib.import_module("symbol_" + net) \
+        .get_symbol(len(CLASSES), nms_thresh, force_nms)
     detector = Detector(net, prefix + "_" + str(data_shape), epoch, \
         data_shape, mean_pixels, ctx=ctx)
     return detector
@@ -67,6 +71,8 @@ def parse_args():
                         help='object visualize score threshold, default 0.6')
     parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.5,
                         help='non-maximum suppression threshold, default 0.5')
+    parser.add_argument('--force', dest='force_nms', type=bool, default=True,
+                        help='force non-maximum suppression on different class')
     args = parser.parse_args()
     return args
 
@@ -84,7 +90,7 @@ if __name__ == '__main__':
     detector = get_detector(args.network, args.prefix, args.epoch,
                             args.data_shape,
                             (args.mean_r, args.mean_g, args.mean_b),
-                            ctx, args.nms_thresh)
+                            ctx, args.nms_thresh, args.force_nms)
     # run detection
     detector.detect_and_visualize(image_list, args.dir, args.extension,
                                   CLASSES, args.thresh)

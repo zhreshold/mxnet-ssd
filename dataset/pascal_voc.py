@@ -39,7 +39,7 @@ class PascalVoc(Imdb):
                         'sheep', 'sofa', 'train', 'tvmonitor']
 
         self.config = {'use_difficult': True,
-                       'comp_id': 'comp3',
+                       'comp_id': 'comp4',
                        'padding': 56}
 
         self.num_classes = len(self.classes)
