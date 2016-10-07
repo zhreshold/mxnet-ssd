@@ -1,4 +1,4 @@
-# SSD: Single Shot MultiBox Detector
+# SSD: Single Shot MultiBox Object Detector
 
 SSD is an unified framework for object detection with a single network.
 
