@@ -191,9 +191,8 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
     net = importlib.import_module("symbol_" + net).get_symbol_train(imdb.num_classes)
 
     # define layers with fixed weight/bias
-    # fixed_param_names = [name for name in net.list_arguments() \
-    #     if name.startswith('conv1_') or name.startswith('conv2_')]
-    fixed_param_names = None
+    fixed_param_names = [name for name in net.list_arguments() \
+        if name.startswith('conv1_') or name.startswith('conv2_')]
 
     # load pretrained or resume from previous state
     ctx_str = '('+ ','.join([str(c) for c in ctx]) + ')'
@@ -231,7 +230,7 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
                       'momentum':momentum,
                       'wd':weight_decay,
                       'lr_scheduler':lr_scheduler,
-                      'clip_gradient':10,
+                      'clip_gradient':None,
                       'rescale_grad': 1.0}
     monitor = mx.mon.Monitor(iter_monitor, pattern=".*") if iter_monitor > 0 else None
 
