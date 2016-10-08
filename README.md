@@ -4,6 +4,8 @@ SSD is an unified framework for object detection with a single network.
 
 You can use the code to train/evaluate/test for object detection task.
 
+There is a pure cpp test end with zero dependence: <a href="https://github.com/zhreshold/mxnet-ssd.cpp/" target="_blank">mxnet-ssd.cpp</a>
+
 ### Disclaimer
 This is a re-implementation of original SSD which is based on caffe. The official
 repository is available [here](https://github.com/weiliu89/caffe/tree/ssd).
@@ -40,8 +42,7 @@ git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
 # git submodule update --recursive --init
 cd mxnet-ssd/mxnet
 ```
-* Build MXNet: Follow the official instructions
-[here](http://mxnet.readthedocs.io/en/latest/how_to/build.html).
+* Build MXNet: Follow the official instructions <a href="http://mxnet.readthedocs.io/en/latest/how_to/build.html/" target="_blank">here</a>.
 Remember to enable CUDA if you want to be able to train, since CPU training is
 insanely slow. Using CUDNN is optional, it's not fully tested but should be fine.
 
