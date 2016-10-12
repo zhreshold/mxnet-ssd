@@ -25,6 +25,8 @@ def parse_args():
                         help='training batch size')
     parser.add_argument('--resume', dest='resume', type=int, default=-1,
                         help='resume training from epoch n')
+    parser.add_argument('--finetune', dest='finetune', type=int, default=-1,
+                        help='finetune from epoch n, rename the model before doing this')
     parser.add_argument('--pretrained', dest='pretrained', help='pretrained model prefix',
                         default=os.path.join(os.getcwd(), 'model', 'vgg16_reduced'), type=str)
     parser.add_argument('--epoch', dest='epoch', help='epoch of pretrained model',
@@ -71,7 +73,7 @@ if __name__ == '__main__':
     train_net(args.network, args.dataset, args.image_set, args.year,
               args.devkit_path, args.batch_size,
               args.data_shape, (args.mean_r, args.mean_g, args.mean_b),
-              args.resume, args.pretrained,
+              args.resume, args.finetune, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
               args.val_image_set, args.val_year, args.lr_refactor_epoch,

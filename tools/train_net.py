@@ -73,7 +73,7 @@ def convert_pretrained(name, args):
     return args
 
 def train_net(net, dataset, image_set, year, devkit_path, batch_size,
-               data_shape, mean_pixels, resume, pretrained, epoch, prefix,
+               data_shape, mean_pixels, resume, finetune, pretrained, epoch, prefix,
                ctx, begin_epoch, end_epoch, frequent, learning_rate,
                momentum, weight_decay, val_set, val_year,
                lr_refactor_epoch, lr_refactor_ratio,
@@ -101,6 +101,9 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
         mean pixel values in (R, G, B)
     resume : int
         if > 0, will load trained epoch with name given by prefix
+    finetune : int
+        if > 0, will load trained epoch with name given by prefix, in this mode
+        all convolutional layers except the last(prediction layer) are fixed
     pretrained : str
         prefix of pretrained model name
     epoch : int
@@ -201,6 +204,14 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
             .format(ctx_str, resume))
         _, args, auxs = mx.model.load_checkpoint(prefix, resume)
         begin_epoch = resume
+    elif finetune > 0:
+        logger.info("Start finetuning with {} from epoch {}"
+            .format(ctx_str, finetune))
+        _, args, auxs = mx.model.load_checkpoint(prefix, finetune)
+        begin_epoch = finetune
+        # the prediction convolution layers name starts with relu, so it's fine
+        fixed_param_names = [name for name in net.list_arguments() \
+            if name.startswith('conv')]
     elif pretrained is not None:
         logger.info("Start training with {} from pretrained model {}"
             .format(ctx_str, pretrained))

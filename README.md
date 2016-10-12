@@ -107,3 +107,10 @@ Use:
 # cd /path/to/mxnet-ssd
 python evaluate.py --gpus 0,1 --batch-size 128 --epoch 0
 ```
+### Convert model to deploy mode
+This is useful for [mxnet-ssd.cpp](https://github.com/zhreshold/mxnet-ssd.cpp)
+when loading python symbol is not available.
+```
+# cd /path/to/mxnet-ssd
+python deploy.py --num-class 20
+```
