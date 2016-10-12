@@ -42,7 +42,12 @@ git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
 # git submodule update --recursive --init
 cd mxnet-ssd/mxnet
 ```
-* Build MXNet: Follow the official instructions [here](http://mxnet.readthedocs.io/en/latest/how_to/build.html)
+* Build MXNet: `cd $REPO_ROOT/mxnet`. Follow the official instructions [here](http://mxnet.readthedocs.io/en/latest/how_to/build.html).
+```
+# for Ubuntu/Debian
+cp make/config.mk ./config.mk
+# modify it if necessary
+```
 Remember to enable CUDA if you want to be able to train, since CPU training is
 insanely slow. Using CUDNN is optional, it's not fully tested but should be fine.
 
