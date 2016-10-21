@@ -47,7 +47,7 @@ def parse_args():
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
                         help='momentum')
-    parser.add_argument('--wd', dest='weight_decay', type=float, default=0.00005,
+    parser.add_argument('--wd', dest='weight_decay', type=float, default=0.0005,
                         help='weight decay')
     parser.add_argument('--mean-r', dest='mean_r', type=float, default=123,
                         help='red mean value')

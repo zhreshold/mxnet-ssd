@@ -4,8 +4,6 @@ SSD is an unified framework for object detection with a single network.
 
 You can use the code to train/evaluate/test for object detection task.
 
-There is a pure cpp test end with zero dependence: [mxnet-ssd.cpp](https://github.com/zhreshold/mxnet-ssd.cpp)
-
 ### Disclaimer
 This is a re-implementation of original SSD which is based on caffe. The official
 repository is available [here](https://github.com/weiliu89/caffe/tree/ssd).
@@ -108,8 +106,8 @@ Use:
 python evaluate.py --gpus 0,1 --batch-size 128 --epoch 0
 ```
 ### Convert model to deploy mode
-This is useful for [mxnet-ssd.cpp](https://github.com/zhreshold/mxnet-ssd.cpp)
-when loading python symbol is not available.
+This simply removes all loss layers, and attach a layer for merging results and non-maximum suppression.
+Useful when loading python symbol is not available.
 ```
 # cd /path/to/mxnet-ssd
 python deploy.py --num-class 20
