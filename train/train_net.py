@@ -1,11 +1,11 @@
-import find_mxnet
+import tools.find_mxnet
 import mxnet as mx
 import logging
 import sys
 import os
 import importlib
-from train.initializer import CustomInitializer
-from train.metric import MultiBoxMetric
+from initializer import CustomInitializer
+from metric import MultiBoxMetric
 from dataset.iterator import DetIter
 from dataset.pascal_voc import PascalVoc
 from dataset.concat_db import ConcatDB

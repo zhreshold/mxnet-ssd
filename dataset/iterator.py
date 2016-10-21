@@ -158,7 +158,17 @@ class DetIter(mx.io.DataIter):
                 ymin = int(crop[1] * height)
                 xmax = int(crop[2] * width)
                 ymax = int(crop[3] * height)
-                data = data[ymin:ymax, xmin:xmax, :]
+                if xmin >= 0 and ymin >= 0 and xmax <= width and ymax <= height:
+                    data = data[ymin:ymax, xmin:xmax, :]
+                else:
+                    # padding mode
+                    new_width = xmax - xmin
+                    new_height = ymax - ymin
+                    offset_x = 0 - xmin
+                    offset_y = 0 - ymin
+                    data_bak = data
+                    data = np.full((new_height, new_width, 3), 255)
+                    data[offset_y:offset_y+height, offset_x:offset_x + width, :] = data_bak
                 label = rand_crops[index][1]
 
         if self.is_train and self._rand_mirror:
