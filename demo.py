@@ -73,6 +73,8 @@ def parse_args():
                         help='non-maximum suppression threshold, default 0.5')
     parser.add_argument('--force', dest='force_nms', type=bool, default=True,
                         help='force non-maximum suppression on different class')
+    parser.add_argument('--timer', dest='show_timer', type=bool, default=True,
+                        help='show detection time')
     args = parser.parse_args()
     return args
 
@@ -93,4 +95,4 @@ if __name__ == '__main__':
                             ctx, args.nms_thresh, args.force_nms)
     # run detection
     detector.detect_and_visualize(image_list, args.dir, args.extension,
-                                  CLASSES, args.thresh)
+                                  CLASSES, args.thresh, args.show_timer)
