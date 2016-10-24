@@ -38,7 +38,7 @@ class Detector(object):
         self.data_shape = data_shape
         self.mean_pixels = mean_pixels
 
-    def detect(self, det_iter, show_timer):
+    def detect(self, det_iter, show_timer=False):
         """
         detect all images in iterator
 
@@ -69,7 +69,7 @@ class Detector(object):
             result.append(res)
         return result
 
-    def im_detect(self, im_list, root_dir=None, extension=None, show_timer=True):
+    def im_detect(self, im_list, root_dir=None, extension=None, show_timer=False):
         """
         wrapper for detecting multiple images
 
@@ -141,7 +141,7 @@ class Detector(object):
         plt.show()
 
     def detect_and_visualize(self, im_list, root_dir=None, extension=None,
-                             classes=[], thresh=0.6, show_timer=True):
+                             classes=[], thresh=0.6, show_timer=False):
         """
         wrapper for im_detect and visualize_detection
 
