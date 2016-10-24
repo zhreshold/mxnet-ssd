@@ -212,13 +212,13 @@ def train_net(net, dataset, image_set, year, devkit_path, batch_size,
         # the prediction convolution layers name starts with relu, so it's fine
         fixed_param_names = [name for name in net.list_arguments() \
             if name.startswith('conv')]
-    elif pretrained is not None:
+    elif pretrained:
         logger.info("Start training with {} from pretrained model {}"
             .format(ctx_str, pretrained))
         _, args, auxs = mx.model.load_checkpoint(pretrained, epoch)
         args = convert_pretrained(pretrained, args)
     else:
-        logger.info("Experimental: start trainig from scratch with {}"
+        logger.info("Experimental: start training from scratch with {}"
             .format(ctx_str))
         args = None
         auxs = None
