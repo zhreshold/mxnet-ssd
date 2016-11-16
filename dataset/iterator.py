@@ -167,7 +167,7 @@ class DetIter(mx.io.DataIter):
                     offset_x = 0 - xmin
                     offset_y = 0 - ymin
                     data_bak = data
-                    data = np.full((new_height, new_width, 3), 255)
+                    data = np.full((new_height, new_width, 3), 128.)
                     data[offset_y:offset_y+height, offset_x:offset_x + width, :] = data_bak
                 label = rand_crops[index][1]
 
