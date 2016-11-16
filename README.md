@@ -20,6 +20,20 @@ remarkable traits of MXNet.
 ![demo2](https://cloud.githubusercontent.com/assets/3307514/19171063/91ec2792-8be0-11e6-983c-773bd6868fa8.png)
 ![demo3](https://cloud.githubusercontent.com/assets/3307514/19171086/a9346842-8be0-11e6-8011-c17716b22ad3.png)
 
+### mAP
+|        Model          | Training data    | Test data |  mAP |
+|:-----------------:|:----------------:|:---------:|:----:|
+| VGG16_reduced 300x300 | VOC07+12 trainval| VOC07 test| 71.57|
+
+### Speed
+|         Model         |   GPU            | CUDNN | Batch-size | FPS* |
+|:---------------------:|:----------------:|:-----:|:----------:|:----:|
+| VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     16     | 95   |
+| VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     8      | 95   |
+| VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     1      | 64   |
+| VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     8      | 36   |
+| VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     1      | 28   |
+- *Forward time only, data loading and drawing excluded.*
 
 ### Getting started
 * You will need python modules: `easydict`, `cv2`, `matplotlib` and `numpy`.
