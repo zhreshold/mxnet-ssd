@@ -112,10 +112,11 @@ def get_symbol_train(num_classes=20):
     ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
         [1,2,.5,3,1./3], [1,2,.5,3,1./3]]
     normalizations = [20, -1, -1, -1, -1, -1]
+    num_channels = [512]
 
     loc_preds, cls_preds, anchor_boxes = multibox_layer(from_layers, \
         num_classes, sizes=sizes, ratios=ratios, normalization=normalizations, \
-        clip=True, interm_layer=0)
+        num_channels=num_channels, clip=True, interm_layer=0)
 
     tmp = mx.symbol.MultiBoxTarget(
         *[anchor_boxes, label, cls_preds], overlap_threshold=.5, \
@@ -127,7 +128,7 @@ def get_symbol_train(num_classes=20):
     cls_target = tmp[2]
 
     cls_prob = mx.symbol.SoftmaxOutput(data=cls_preds, label=cls_target, \
-        ignore_label=-1, use_ignore=True, grad_scale=1., multi_output=True, \
+        ignore_label=-1, use_ignore=True, grad_scale=3., multi_output=True, \
         normalization='valid', name="cls_prob")
     loc_loss_ = mx.symbol.smooth_l1(name="loc_loss_", \
         data=loc_target_mask * (loc_preds - loc_target), scalar=1.0)

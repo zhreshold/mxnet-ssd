@@ -7,6 +7,43 @@ cfg.ROOT_DIR = os.path.join(os.path.dirname(__file__), '..')
 
 # training
 cfg.TRAIN = edict()
+cfg.TRAIN.RAND_CROPS = [
+    {
+    'min_area': 0.3,
+    'ratio': (0.5, 2.0),
+    'min_overlap': 0.1,
+    },
+    {
+    'min_area': 0.3,
+    'ratio': (0.5, 2.0),
+    'min_overlap': 0.3,
+    },
+    {
+    'min_area': 0.3,
+    'ratio': (0.5, 2.0),
+    'min_overlap': 0.5,
+    },
+    {
+    'min_area': 0.3,
+    'ratio': (0.5, 2.0),
+    'min_overlap': 0.7,
+    },
+    {
+    'min_area': 0.3,
+    'ratio': (0.5, 2.0),
+    'min_overlap': 0.9,
+    },
+    {
+    'min_area': 0.3,
+    'ratio': (0.5, 2.0),
+    'max_overlap': 0.1,
+    },
+    ]
+cfg.TRAIN.RAND_PAD = {
+    'p': 0.5,
+    'max_area': 4.0,
+    'padval': 128
+    }
 cfg.TRAIN.RAND_SAMPLERS = [RandCropper(min_scale=1., max_trials=1, max_sample=1),
     RandCropper(min_scale=.3, min_aspect_ratio=.5, max_aspect_ratio=2., min_overlap=.1),
     RandCropper(min_scale=.3, min_aspect_ratio=.5, max_aspect_ratio=2., min_overlap=.3),

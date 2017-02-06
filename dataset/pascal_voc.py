@@ -39,8 +39,7 @@ class PascalVoc(Imdb):
                         'sheep', 'sofa', 'train', 'tvmonitor']
 
         self.config = {'use_difficult': True,
-                       'comp_id': 'comp4',
-                       'padding': 56}
+                       'comp_id': 'comp4',}
 
         self.num_classes = len(self.classes)
         self.image_set_index = self._load_image_set_index(shuffle)
@@ -113,7 +112,7 @@ class PascalVoc(Imdb):
         ground-truths of this image
         """
         assert self.labels is not None, "Labels not processed"
-        return self.labels[index, :, :]
+        return self.labels[index]
 
     def _label_path_from_index(self, index):
         """
@@ -141,7 +140,6 @@ class PascalVoc(Imdb):
         labels packed in [num_images x max_num_objects x 5] tensor
         """
         temp = []
-        max_objects = 0
 
         # load ground-truth from xml annotations
         for idx in self.image_set_index:
@@ -168,20 +166,7 @@ class PascalVoc(Imdb):
                 ymax = float(xml_box.find('ymax').text) / height
                 label.append([cls_id, xmin, ymin, xmax, ymax])
             temp.append(np.array(label))
-            max_objects = max(max_objects, len(label))
-
-        # add padding to labels so that the dimensions match in each batch
-        # TODO: design a better way to handle label padding
-        assert max_objects > 0, "No objects found for any of the images"
-        assert max_objects <= self.config['padding'], "# obj exceed padding"
-        self.padding = self.config['padding']
-        labels = []
-        for label in temp:
-            label = np.lib.pad(label, ((0, self.padding-label.shape[0]), (0,0)), \
-                               'constant', constant_values=(-1, -1))
-            labels.append(label)
-
-        return np.array(labels)
+        return temp
 
     def evaluate_detections(self, detections):
         """

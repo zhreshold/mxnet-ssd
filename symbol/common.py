@@ -39,7 +39,8 @@ def conv_act_layer(from_layer, name, num_filter, kernel=(1,1), pad=(0,0), \
     return conv, relu
 
 def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
-                    ratios=[1], normalization=-1, clip=True, interm_layer=0):
+                    ratios=[1], normalization=-1, num_channels=[],
+                    clip=True, interm_layer=0):
     """
     the basic aggregation module for SSD detection. Takes in multiple layers,
     generate multiple object detection targets by customized layers
@@ -58,6 +59,9 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
     normalizations : int or list of int
         use normalizations value for all layers or [...] for specific layers,
         -1 indicate no normalizations and scales
+    num_channels : list of int
+        number of input layer channels, used when normalization is enabled, the
+        length of list should equals to number of normalization layers
     clip : bool
         whether to clip out-of-image boxes
     interm_layer : int
@@ -97,6 +101,9 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
         normalization = [normalization] * len(from_layers)
     assert len(normalization) == len(from_layers)
 
+    assert sum(x > 0 for x in normalization) == len(num_channels), \
+        "must provide number of channels for each normalized layer"
+
     loc_pred_layers = []
     cls_pred_layers = []
     anchor_layers = []
@@ -108,8 +115,15 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
         if normalization[k] > 0:
             from_layer = mx.symbol.L2Normalization(data=from_layer, \
                 mode="channel", name="{}_norm".format(from_name))
-            from_layer = mx.symbol.Scale(data=from_layer, mode="spatial", \
-                name="{}_scale_{}".format(from_name, normalization[k]))
+            # from_layer = mx.symbol.NaiveScale(data=from_layer, mode="spatial", \
+            #     name="{}_scale_{}".format(from_name, normalization[k]))
+            # scale = mx.symbol.InferedVariable(data=from_layer, shape=(1, 0, 1, 1),
+            #     suffix="{}_scale".format(normalization[k]),
+            #     name="{}_scale".format(from_name))
+            scale = mx.symbol.Variable(name="{}_scale".format(from_name),
+                shape=(1, num_channels.pop(0), 1, 1))
+            # scale = mx.symbol.Reshape(data=scale, shape=(1, 512, 1, 1))
+            from_layer = normalization[k] * mx.symbol.broadcast_mul(lhs=scale, rhs=from_layer)
         if interm_layer > 0:
             from_layer = mx.symbol.Convolution(data=from_layer, kernel=(3,3), \
                 stride=(1,1), pad=(1,1), num_filter=interm_layer, \

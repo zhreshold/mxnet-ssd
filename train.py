@@ -7,16 +7,10 @@ from train.train_net import train_net
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a Single-shot detection network')
-    parser.add_argument('--dataset', dest='dataset', help='which dataset to use',
-                        default='pascal', type=str)
-    parser.add_argument('--image-set', dest='image_set', help='train set, can be trainval or train',
-                        default='trainval', type=str)
-    parser.add_argument('--year', dest='year', help='can be 2007, 2012',
-                        default='2007,2012', type=str)
-    parser.add_argument('--val-image-set', dest='val_image_set', help='validation set, can be val or test',
-                        default='test', type=str)
-    parser.add_argument('--val-year', dest='val_year', help='can be 2007, 2010, 2012',
-                        default='2007', type=str)
+    parser.add_argument('--train-path', dest='train_path', help='train list to use',
+                        default=os.path.join(os.getcwd(), 'data', 'train.lst'), type=str)
+    parser.add_argument('--val-path', dest='val_path', help='validation list to use',
+                        default=os.path.join(os.getcwd(), 'data', 'val.lst'), type=str)
     parser.add_argument('--devkit-path', dest='devkit_path', help='VOCdevkit path',
                         default=os.path.join(os.getcwd(), 'data', 'VOCdevkit'), type=str)
     parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
@@ -43,7 +37,7 @@ def parse_args():
                         default=20, type=int)
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                         help='set image shape')
-    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.002,
+    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.001,
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
                         help='momentum')
@@ -55,14 +49,16 @@ def parse_args():
                         help='green mean value')
     parser.add_argument('--mean-b', dest='mean_b', type=float, default=104,
                         help='blue mean value')
-    parser.add_argument('--lr-epoch', dest='lr_refactor_epoch', type=int, default=20,
+    parser.add_argument('--lr-epoch', dest='lr_refactor_step', type=str, default='1',
                         help='refactor learning rate every N epoch')
-    parser.add_argument('--lr-ratio', dest='lr_refactor_ratio', type=float, default=0.8,
+    parser.add_argument('--lr-ratio', dest='lr_refactor_ratio', type=str, default='1',
                         help='ratio to refactor learning rate')
     parser.add_argument('--log', dest='log_file', type=str, default="train.log",
                         help='save training log to file')
     parser.add_argument('--monitor', dest='monitor', type=int, default=0,
                         help='log network parameters every N iters if larger than 0')
+    parser.add_argument('--num-class', dest='num_class', type=int, default=20,
+                        help='number of classes')
     args = parser.parse_args()
     return args
 
@@ -70,11 +66,12 @@ if __name__ == '__main__':
     args = parse_args()
     ctx = [mx.gpu(int(i)) for i in args.gpus.split(',')]
     ctx = mx.cpu() if not ctx else ctx
-    train_net(args.network, args.dataset, args.image_set, args.year,
-              args.devkit_path, args.batch_size,
+    train_net(args.network, args.train_path, args.val_path, args.devkit_path,
+              args.num_class, args.batch_size,
               args.data_shape, (args.mean_r, args.mean_g, args.mean_b),
+              0.5, 0.5, 0.5, 0.2,
               args.resume, args.finetune, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
-              args.val_image_set, args.val_year, args.lr_refactor_epoch,
+              args.lr_refactor_step,
               args.lr_refactor_ratio, args.monitor, args.log_file)
