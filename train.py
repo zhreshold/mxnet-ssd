@@ -3,7 +3,10 @@ import tools.find_mxnet
 import mxnet as mx
 import os
 import sys
+import multiprocessing
 from train.train_net import train_net
+
+os.environ["MXNET_CPU_WORKER_NTHREADS"] = "3"
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a Single-shot detection network')
@@ -49,6 +52,14 @@ def parse_args():
                         help='green mean value')
     parser.add_argument('--mean-b', dest='mean_b', type=float, default=104,
                         help='blue mean value')
+    parser.add_argument('--bright', dest='bright', type=float, default=0.1,
+                        help='bright delta value')
+    parser.add_argument('--contrast', dest='contrast', type=float, default=0.1,
+                        help='contrast delta value')
+    parser.add_argument('--saturation', dest='saturation', type=float, default=0.1,
+                        help='saturation value')
+    parser.add_argument('--pca-noise', dest='pca_noise', type=float, default=0.1,
+                        help='pca noise value')
     parser.add_argument('--lr-epoch', dest='lr_refactor_step', type=str, default='1',
                         help='refactor learning rate every N epoch')
     parser.add_argument('--lr-ratio', dest='lr_refactor_ratio', type=str, default='1',
@@ -59,17 +70,25 @@ def parse_args():
                         help='log network parameters every N iters if larger than 0')
     parser.add_argument('--num-class', dest='num_class', type=int, default=20,
                         help='number of classes')
+    parser.add_argument('--thread', dest='n_thread', type=int, default=6,
+                        help='number of cpu threads to use')
     args = parser.parse_args()
     return args
 
 if __name__ == '__main__':
     args = parse_args()
+    try:
+        cpu_count = multiprocessing.cpu_count()
+        n_thread = min(cpu_count - 1, args.n_thread)
+    except NotImplementedError:
+        n_thread = args.n_thread
+    os.environ["MXNET_CPU_WORKER_NTHREADS"] = str(n_thread)
     ctx = [mx.gpu(int(i)) for i in args.gpus.split(',')]
     ctx = mx.cpu() if not ctx else ctx
     train_net(args.network, args.train_path, args.val_path, args.devkit_path,
               args.num_class, args.batch_size,
               args.data_shape, (args.mean_r, args.mean_g, args.mean_b),
-              0.5, 0.5, 0.5, 0.2,
+              args.bright, args.contrast, args.saturation, args.pca_noise,
               args.resume, args.finetune, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
