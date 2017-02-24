@@ -6,14 +6,12 @@ import sys
 import multiprocessing
 from train.train_net import train_net
 
-os.environ["MXNET_CPU_WORKER_NTHREADS"] = "3"
-
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a Single-shot detection network')
     parser.add_argument('--train-path', dest='train_path', help='train list to use',
-                        default=os.path.join(os.getcwd(), 'data', 'train.lst'), type=str)
+                        default=os.path.join(os.getcwd(), 'data', 'train.rec'), type=str)
     parser.add_argument('--val-path', dest='val_path', help='validation list to use',
-                        default=os.path.join(os.getcwd(), 'data', 'val.lst'), type=str)
+                        default=os.path.join(os.getcwd(), 'data', 'val.rec'), type=str)
     parser.add_argument('--devkit-path', dest='devkit_path', help='VOCdevkit path',
                         default=os.path.join(os.getcwd(), 'data', 'VOCdevkit'), type=str)
     parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
@@ -40,7 +38,7 @@ def parse_args():
                         default=20, type=int)
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                         help='set image shape')
-    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.001,
+    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.0001,
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
                         help='momentum')
@@ -62,7 +60,7 @@ def parse_args():
                         help='pca noise value')
     parser.add_argument('--lr-epoch', dest='lr_refactor_step', type=str, default='1',
                         help='refactor learning rate every N epoch')
-    parser.add_argument('--lr-ratio', dest='lr_refactor_ratio', type=str, default='1',
+    parser.add_argument('--lr-ratio', dest='lr_refactor_ratio', type=str, default='0.1',
                         help='ratio to refactor learning rate')
     parser.add_argument('--log', dest='log_file', type=str, default="train.log",
                         help='save training log to file')

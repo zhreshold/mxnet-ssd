@@ -46,7 +46,7 @@ def load_pascal(image_set, year, devkit_path, shuffle=False):
 if __name__ == '__main__':
     root = os.path.join(os.getcwd(), 'data', 'VOCdevkit')
     db = load_pascal(
-        'test', '2007',
+        'trainval', '2007,2012',
         root,
         True)
-    db.save_imglist('pascal_07_test.lst', root=root)
+    db.save_imglist('pascal_0712_trainval.lst', root=root)

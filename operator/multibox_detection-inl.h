@@ -100,6 +100,7 @@ struct MultiBoxDetectionParam : public dmlc::Parameter<MultiBoxDetectionParam> {
   int background_id;
   float nms_threshold;
   bool force_suppress;
+  int keep_topk;
   VarInfo variances;
   DMLC_DECLARE_PARAMETER(MultiBoxDetectionParam) {
     DMLC_DECLARE_FIELD(clip).set_default(true)
@@ -114,6 +115,8 @@ struct MultiBoxDetectionParam : public dmlc::Parameter<MultiBoxDetectionParam> {
     .describe("Suppress all detections regardless of class_id.");
     DMLC_DECLARE_FIELD(variances).set_default(VarInfo({0.1f, 0.1f, 0.2f, 0.2f}))
     .describe("Variances to be decoded from box regression output.");
+    DMLC_DECLARE_FIELD(keep_topk).set_default(-1)
+    .describe("Keep top k detections.");
   }
 };  // struct MultiBoxDetectionParam
 

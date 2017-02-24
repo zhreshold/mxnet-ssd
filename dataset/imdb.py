@@ -50,7 +50,7 @@ class Imdb(object):
         """
         raise NotImplementedError
 
-    def save_imglist(self, fname=None, root=None, shuffle=True):
+    def save_imglist(self, fname=None, root=None, shuffle=False):
         """
         save imglist to disk
 
@@ -65,7 +65,7 @@ class Imdb(object):
             path = self.image_path_from_index(index)
             if root:
                 path = osp.relpath(path, root)
-            str_list.append('\t'.join([str(index),] + ["{0:.4f}".format(x) for x in label.ravel()] + [path,]) + '\n')
+            str_list.append('\t'.join([str(index), str(2), str(5)]  + ["{0:.4f}".format(x) for x in label.ravel()] + [path,]) + '\n')
         if str_list:
             if shuffle:
                 import random

@@ -6,7 +6,7 @@ import os
 import importlib
 from initializer import CustomInitializer
 from metric import MultiBoxMetric
-from dataset.iterator import DetIter
+from dataset.iterator import DetIter, DetRecordIter
 from dataset.pascal_voc import PascalVoc
 from dataset.concat_db import ConcatDB
 from config.config import cfg
@@ -287,20 +287,29 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
         mean_pixels = [mean_pixels, mean_pixels, mean_pixels]
     assert len(mean_pixels) == 3, "must provide all RGB mean values"
 
-    train_iter = mx.image.ImageDetIter(
-        batch_size, data_shape, path_imglist=train_path, path_root=devkit_path,
-        mean=mean_pixels, brightness=brightness,
-        contrast=contrast, saturation=saturation, pca_noise=pca_noise,
-        shuffle=cfg.TRAIN.EPOCH_SHUFFLE, rand_crop=cfg.TRAIN.RAND_CROPS,
-        rand_pad=cfg.TRAIN.RAND_PAD, rand_mirror=cfg.TRAIN.RAND_MIRROR)
+    # train_iter = mx.image.ImageDetIter(
+    #     batch_size, data_shape, path_imglist=train_path, path_root=devkit_path,
+    #     mean=mean_pixels, brightness=brightness,
+    #     contrast=contrast, saturation=saturation, pca_noise=pca_noise,
+    #     shuffle=cfg.TRAIN.EPOCH_SHUFFLE, rand_crop=cfg.TRAIN.RAND_CROPS,
+    #     rand_pad=cfg.TRAIN.RAND_PAD, rand_mirror=cfg.TRAIN.RAND_MIRROR)
+    # train_iter = mx.image.ImageDetIter(
+    #     batch_size, data_shape, path_imgrec=train_path.replace('.lst', '.rec'), path_imgidx=train_path.replace('.lst', '.idx'),
+    #     mean=mean_pixels, brightness=brightness,
+    #     contrast=contrast, saturation=saturation, pca_noise=pca_noise,
+    #     shuffle=cfg.TRAIN.EPOCH_SHUFFLE, rand_crop=cfg.TRAIN.RAND_CROPS,
+    #     rand_pad=cfg.TRAIN.RAND_PAD, rand_mirror=cfg.TRAIN.RAND_MIRROR)
+    train_iter = DetRecordIter(train_path, batch_size, data_shape, label_pad_width=300, **cfg.train)
+
     if val_path:
-        val_iter = mx.image.ImageDetIter(
-            batch_size, data_shape, path_imglist=val_path, path_root=devkit_path,
-            mean=mean_pixels)
+        # val_iter = mx.image.ImageDetIter(
+        #     batch_size, data_shape, path_imgrec=val_path.replace('.lst', '.rec'), path_imgidx=val_path.replace('.lst', '.idx'),
+        #     mean=mean_pixels)
+        val_iter = DetRecordIter(val_path, batch_size, data_shape, label_pad_width=300, **cfg.valid)
         # synchronize label_shape to avoid reshaping executer
-        label_shape = map(max, train_iter.label_shape, val_iter.label_shape)
-        train_iter.reshape(label_shape=label_shape)
-        val_iter.reshape(label_shape=label_shape)
+        # label_shape = map(max, train_iter.label_shape, val_iter.label_shape)
+        # train_iter.reshape(label_shape=label_shape)
+        # val_iter.reshape(label_shape=label_shape)
     else:
         val_iter = None
 
@@ -352,7 +361,8 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
     epoch_end_callback = mx.callback.do_checkpoint(prefix)
     iter_refactor = [int(r) for r in lr_refactor_step.split(',')]
     lr_refactor_ratio = [float(r) for r in lr_refactor_ratio.split(',')]
-    lr_scheduler = mx.lr_scheduler.MultiFactorScheduler(iter_refactor, lr_refactor_ratio)
+    # lr_scheduler = mx.lr_scheduler.MultiFactorScheduler(iter_refactor, lr_refactor_ratio)
+    lr_scheduler = None
     optimizer_params={'learning_rate':learning_rate,
                       'momentum':momentum,
                       'wd':weight_decay,

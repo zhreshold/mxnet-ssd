@@ -153,12 +153,23 @@ __global__ void DetectionForwardKernel(DType *out, const DType *cls_prob,
     __syncthreads();
   }
 
+  // keep top k detections
+  const int keep_topk = 400;
+  int ntop = size;
+  if (keep_topk > -1 && keep_topk < ntop) {
+    ntop = keep_topk;
+    for (int i = ntop + index; i < size; i += blockDim.x) {
+      out[i * 6] = -1;
+    }
+    __syncthreads();
+  }
+
   // apply NMS
-  for (int compare_pos = 0; compare_pos < size; ++compare_pos) {
+  for (int compare_pos = 0; compare_pos < ntop; ++compare_pos) {
     DType compare_id = out[compare_pos * 6];
     if (compare_id < 0) continue;  // not a valid positive detection, skip
     DType *compare_loc_ptr = out + compare_pos * 6 + 2;
-    for (int i = compare_pos + index + 1; i < size; i += blockDim.x) {
+    for (int i = compare_pos + index + 1; i < ntop; i += blockDim.x) {
       DType class_id = out[i * 6];
       if (class_id < 0) continue;
       if (force_suppress || (class_id == compare_id)) {
