@@ -80,9 +80,10 @@ class DetRecordIter(mx.io.DataIter):
             self.batch_size = self._batch.label[0].shape[0]
             self.label_header_width = int(first_label[4])
             self.label_object_width = int(first_label[5])
+            assert self.label_object_width >= 5, "object width must >=5"
             self.label_start = 4 + self.label_header_width
             self.max_objects = (first_label.size - self.label_start) // self.label_object_width
-            self.label_shape = (self.batch_size, self.max_objects, 5)
+            self.label_shape = (self.batch_size, self.max_objects, self.label_object_width)
             self.label_end = self.label_start + self.max_objects * self.label_object_width
             self.provide_label = [('label', self.label_shape)]
 
@@ -90,8 +91,7 @@ class DetRecordIter(mx.io.DataIter):
         label = self._batch.label[0].asnumpy()
         label = label[:, self.label_start:self.label_end].reshape(
             (self.batch_size, self.max_objects, self.label_object_width))
-        self._batch.label = [mx.nd.array(label[:, :, :5])]
-
+        self._batch.label = [mx.nd.array(label)]
         return True
 
 class DetIter(mx.io.DataIter):

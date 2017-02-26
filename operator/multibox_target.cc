@@ -66,17 +66,18 @@ inline void MultiBoxTargetForward(const Tensor<cpu, 2, DType> &loc_target,
   const DType *p_anchor = anchors.dptr_;
   const int num_batches = labels.size(0);
   const int num_labels = labels.size(1);
+  const int label_width = labels.size(2);
   const int num_anchors = anchors.size(0);
   for (int nbatch = 0; nbatch < num_batches; ++nbatch) {
-    const DType *p_label = labels.dptr_ + nbatch * num_labels * 5;
+    const DType *p_label = labels.dptr_ + nbatch * num_labels * label_width;
     const DType *p_overlaps = temp_space.dptr_ + nbatch * num_anchors * num_labels;
     int num_valid_gt = 0;
     for (int i = 0; i < num_labels; ++i) {
-      if (static_cast<float>(*(p_label + i * 5)) == -1.0f) {
-        CHECK_EQ(static_cast<float>(*(p_label + i * 5 + 1)), -1.0f);
-        CHECK_EQ(static_cast<float>(*(p_label + i * 5 + 2)), -1.0f);
-        CHECK_EQ(static_cast<float>(*(p_label + i * 5 + 3)), -1.0f);
-        CHECK_EQ(static_cast<float>(*(p_label + i * 5 + 4)), -1.0f);
+      if (static_cast<float>(*(p_label + i * label_width)) == -1.0f) {
+        CHECK_EQ(static_cast<float>(*(p_label + i * label_width + 1)), -1.0f);
+        CHECK_EQ(static_cast<float>(*(p_label + i * label_width + 2)), -1.0f);
+        CHECK_EQ(static_cast<float>(*(p_label + i * label_width + 3)), -1.0f);
+        CHECK_EQ(static_cast<float>(*(p_label + i * label_width + 4)), -1.0f);
         break;
       }
       ++num_valid_gt;
@@ -236,14 +237,14 @@ inline void MultiBoxTargetForward(const Tensor<cpu, 2, DType> &loc_target,
           // positive sample
           CHECK_GE(max_matches[i].second, 0);
           // 0 reserved for background
-          *(p_cls_target + i) = *(p_label + 5 * max_matches[i].second) + 1;
+          *(p_cls_target + i) = *(p_label + label_width * max_matches[i].second) + 1;
           int offset = i * 4;
           *(p_loc_mask + offset) = 1;
           *(p_loc_mask + offset + 1) = 1;
           *(p_loc_mask + offset + 2) = 1;
           *(p_loc_mask + offset + 3) = 1;
           AssignLocTargets(p_anchor + i * 4,
-            p_label + 5 * max_matches[i].second + 1, p_loc_target + offset,
+            p_label + label_width * max_matches[i].second + 1, p_loc_target + offset,
             variances[0], variances[1], variances[2], variances[3]);
         } else if (anchor_flags[i] == 0) {
           // negative sample

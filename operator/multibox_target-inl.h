@@ -271,9 +271,9 @@ class MultiBoxTargetProp : public OperatorProperty {
     CHECK_GT(ashape[1], 0) << "Number boxes should > 0";
     CHECK_EQ(ashape[2], 4) << "Box dimension should be 4: [xmin-ymin-xmax-ymax]";
     TShape lshape = in_shape->at(mboxtarget_enum::kLabel);
-    CHECK_EQ(lshape.ndim(), 3) << "Label should be [batch-num_labels-5] tensor";
+    CHECK_EQ(lshape.ndim(), 3) << "Label should be [batch-num_labels-(>=5)] tensor";
     CHECK_GT(lshape[1], 0) << "Padded label should > 0";
-    CHECK_EQ(lshape[2], 5) << "Label should be [batch-num_labels-5] tensor";
+    CHECK_GE(lshape[2], 5) << "Label width must >=5";
     TShape pshape = in_shape->at(mboxtarget_enum::kClsPred);
     CHECK_EQ(pshape.ndim(), 3) << "Prediction: [nbatch-num_classes-num_anchors]";
     CHECK_EQ(pshape[2], ashape[1]) << "Number of anchors mismatch";
