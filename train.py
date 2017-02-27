@@ -8,9 +8,9 @@ from train.train_net import train_net
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a Single-shot detection network')
-    parser.add_argument('--train-path', dest='train_path', help='train list to use',
+    parser.add_argument('--train-path', dest='train_path', help='train record to use',
                         default=os.path.join(os.getcwd(), 'data', 'train.rec'), type=str)
-    parser.add_argument('--val-path', dest='val_path', help='validation list to use',
+    parser.add_argument('--val-path', dest='val_path', help='validation record to use',
                         default=os.path.join(os.getcwd(), 'data', 'val.rec'), type=str)
     parser.add_argument('--devkit-path', dest='devkit_path', help='VOCdevkit path',
                         default=os.path.join(os.getcwd(), 'data', 'VOCdevkit'), type=str)
