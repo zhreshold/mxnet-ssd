@@ -332,7 +332,7 @@ inline void MultiBoxTargetForward(const Tensor<gpu, 2, DType> &loc_target,
                            const float negative_mining_ratio,
                            const float negative_mining_thresh,
                            const int minimum_negative_samples,
-                           const std::vector<float> &variances) {
+                           const nnvm::Tuple<float> &variances) {
   const int num_batches = labels.size(0);
   const int num_labels = labels.size(1);
   const int label_width = labels.size(2);
@@ -341,6 +341,7 @@ inline void MultiBoxTargetForward(const Tensor<gpu, 2, DType> &loc_target,
   CHECK_GE(num_batches, 1);
   CHECK_GT(num_labels, 2);
   CHECK_GE(num_anchors, 1);
+  CHECK_EQ(variances.ndim(), 4);
 
   // init ground-truth flags, by checking valid labels
   temp_space[1] = 0.f;

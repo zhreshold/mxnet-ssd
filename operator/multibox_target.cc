@@ -62,12 +62,13 @@ inline void MultiBoxTargetForward(const Tensor<cpu, 2, DType> &loc_target,
                            const float negative_mining_ratio,
                            const float negative_mining_thresh,
                            const int minimum_negative_samples,
-                           const std::vector<float> &variances) {
+                           const nnvm::Tuple<float> &variances) {
   const DType *p_anchor = anchors.dptr_;
   const int num_batches = labels.size(0);
   const int num_labels = labels.size(1);
   const int label_width = labels.size(2);
   const int num_anchors = anchors.size(0);
+  CHECK_EQ(variances.ndim(), 4);
   for (int nbatch = 0; nbatch < num_batches; ++nbatch) {
     const DType *p_label = labels.dptr_ + nbatch * num_labels * label_width;
     const DType *p_overlaps = temp_space.dptr_ + nbatch * num_anchors * num_labels;

@@ -10,6 +10,7 @@
 #include <dmlc/parameter.h>
 #include <mxnet/operator.h>
 #include <mxnet/base.h>
+#include <nnvm/tuple.h>
 #include <map>
 #include <vector>
 #include <string>
@@ -37,83 +38,14 @@ enum MultiBoxPriorOpInputs {kData};
 enum MultiBoxPriorOpOutputs {kOut};
 }  // namespace mboxprior_enum
 
-struct SizeInfo {
-  SizeInfo() {}
-  explicit SizeInfo(std::vector<float> in) : info(in) {}
-
-  std::vector<float> info;
-};  // struct SizeInfo
-
-inline std::istream &operator>>(std::istream &is, SizeInfo &size) {
-  while (true) {
-    char ch = is.get();
-    if (ch == '(') break;
-    if (!isspace(ch)) {
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-  }
-  float f;
-  std::vector<float> tmp;
-  // deal with empty case
-  // safe to remove after stop using target_size
-  size_t pos = is.tellg();
-  char ch = is.get();
-  if (ch == ')') {
-    size.info = tmp;
-    return is;
-  }
-  is.seekg(pos);
-  // finish deal
-  while (is >> f) {
-    tmp.push_back(f);
-    char ch;
-    do {
-      ch = is.get();
-    } while (isspace(ch));
-    if (ch == ',') {
-      while (true) {
-        ch = is.peek();
-        if (isspace(ch)) {
-          is.get(); continue;
-        }
-        if (ch == ')') {
-          is.get(); break;
-        }
-        break;
-      }
-      if (ch == ')') break;
-    } else if (ch == ')') {
-      break;
-    } else {
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-  }
-  size.info = tmp;
-  return is;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const SizeInfo &size) {
-  os << '(';
-  for (index_t i = 0; i < size.info.size(); ++i) {
-    if (i != 0) os << ',';
-    os << size.info[i];
-  }
-  // python style tuple
-  if (size.info.size() == 1) os << ',';
-  os << ')';
-  return os;
-}
-
 struct MultiBoxPriorParam : public dmlc::Parameter<MultiBoxPriorParam> {
-  SizeInfo sizes;
-  SizeInfo ratios;
+  nnvm::Tuple<float> sizes;
+  nnvm::Tuple<float> ratios;
   bool clip;
   DMLC_DECLARE_PARAMETER(MultiBoxPriorParam) {
-    DMLC_DECLARE_FIELD(sizes).set_default(SizeInfo({1.0f}))
+    DMLC_DECLARE_FIELD(sizes).set_default({1.0f})
     .describe("List of sizes of generated MultiBoxPriores.");
-    DMLC_DECLARE_FIELD(ratios).set_default(SizeInfo({1.0f}))
+    DMLC_DECLARE_FIELD(ratios).set_default({1.0f})
     .describe("List of aspect ratios of generated MultiBoxPriores.");
     DMLC_DECLARE_FIELD(clip).set_default(false)
     .describe("Whether to clip out-of-boundary boxes.");
@@ -124,7 +56,8 @@ template<typename xpu, typename DType>
 class MultiBoxPriorOp : public Operator {
  public:
   explicit MultiBoxPriorOp(MultiBoxPriorParam param)
-    : clip_(param.clip), sizes_(param.sizes.info), ratios_(param.ratios.info) {
+    : clip_(param.clip), sizes_(param.sizes.begin(), param.sizes.end()),
+    ratios_(param.ratios.begin(), param.ratios.end()) {
       CHECK_GT(sizes_.size(), 0);
       CHECK_GT(ratios_.size(), 0);
     }

@@ -10,6 +10,7 @@
 #include <dmlc/parameter.h>
 #include <mxnet/operator.h>
 #include <mxnet/base.h>
+#include <nnvm/tuple.h>
 #include <map>
 #include <vector>
 #include <string>
@@ -37,82 +38,13 @@ enum MultiBoxTargetOpOutputs {kLoc, kLocMask, kCls};
 enum MultiBoxTargetOpResource {kTempSpace};
 }  // namespace mboxtarget_enum
 
-struct VarsInfo {
-  VarsInfo() {}
-  explicit VarsInfo(std::vector<float> in) : info(in) {}
-
-  std::vector<float> info;
-};  // struct VarsInfo
-
-inline std::istream &operator>>(std::istream &is, VarsInfo &size) {
-  while (true) {
-    char ch = is.get();
-    if (ch == '(') break;
-    if (!isspace(ch)) {
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-  }
-  float f;
-  std::vector<float> tmp;
-  // deal with empty case
-  // safe to remove after stop using target_size
-  size_t pos = is.tellg();
-  char ch = is.get();
-  if (ch == ')') {
-    size.info = tmp;
-    return is;
-  }
-  is.seekg(pos);
-  // finish deal
-  while (is >> f) {
-    tmp.push_back(f);
-    char ch;
-    do {
-      ch = is.get();
-    } while (isspace(ch));
-    if (ch == ',') {
-      while (true) {
-        ch = is.peek();
-        if (isspace(ch)) {
-          is.get(); continue;
-        }
-        if (ch == ')') {
-          is.get(); break;
-        }
-        break;
-      }
-      if (ch == ')') break;
-    } else if (ch == ')') {
-      break;
-    } else {
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-  }
-  size.info = tmp;
-  return is;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const VarsInfo &size) {
-  os << '(';
-  for (index_t i = 0; i < size.info.size(); ++i) {
-    if (i != 0) os << ',';
-    os << size.info[i];
-  }
-  // python style tuple
-  if (size.info.size() == 1) os << ',';
-  os << ')';
-  return os;
-}
-
 struct MultiBoxTargetParam : public dmlc::Parameter<MultiBoxTargetParam> {
   float overlap_threshold;
   float ignore_label;
   float negative_mining_ratio;
   float negative_mining_thresh;
   int minimum_negative_samples;
-  VarsInfo variances;
+  nnvm::Tuple<float> variances;
   DMLC_DECLARE_PARAMETER(MultiBoxTargetParam) {
     DMLC_DECLARE_FIELD(overlap_threshold).set_default(0.5f)
     .describe("Anchor-GT overlap threshold to be regarded as a possitive match.");
@@ -124,7 +56,7 @@ struct MultiBoxTargetParam : public dmlc::Parameter<MultiBoxTargetParam> {
     .describe("Threshold used for negative mining.");
     DMLC_DECLARE_FIELD(minimum_negative_samples).set_default(0)
     .describe("Minimum number of negative samples.");
-    DMLC_DECLARE_FIELD(variances).set_default(VarsInfo({0.1f, 0.1f, 0.2f, 0.2f}))
+    DMLC_DECLARE_FIELD(variances).set_default({0.1f, 0.1f, 0.2f, 0.2f})
     .describe("Variances to be encoded in box regression target.");
   }
 };  // struct MultiBoxTargetParam
@@ -217,7 +149,7 @@ class MultiBoxTargetOp : public Operator {
                           param_.negative_mining_ratio,
                           param_.negative_mining_thresh,
                           param_.minimum_negative_samples,
-                          param_.variances.info);
+                          param_.variances);
   }
 
   virtual void Backward(const OpContext &ctx,

@@ -192,11 +192,11 @@ inline void MultiBoxDetectionForward(const Tensor<gpu, 3, DType> &out,
                                      const Tensor<gpu, 3, DType> &temp_space,
                                      const float threshold,
                                      const bool clip,
-                                     const std::vector<float> &variances,
+                                     const nnvm::Tuple<float> &variances,
                                      const float nms_threshold,
                                      const bool force_suppress,
                                      const int nms_topk) {
-  CHECK_EQ(variances.size(), 4) << "Variance size must be 4";
+  CHECK_EQ(variances.ndim(), 4) << "Variance size must be 4";
   const int num_classes = cls_prob.size(1);
   const int num_anchors = cls_prob.size(2);
   const int num_batches = cls_prob.size(0);
