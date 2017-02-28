@@ -5,50 +5,10 @@ import sys
 import os
 import importlib
 from initializer import CustomInitializer
-from metric import MultiBoxMetric
-from dataset.iterator import DetIter, DetRecordIter
-from dataset.pascal_voc import PascalVoc
-from dataset.concat_db import ConcatDB
+from dataset.iterator import DetRecordIter
+from train.metric import MultiBoxMetric
+from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
-
-def load_pascal(image_set, year, devkit_path, shuffle=False):
-    """
-    wrapper function for loading pascal voc dataset
-
-    Parameters:
-    ----------
-    image_set : str
-        train, trainval...
-    year : str
-        2007, 2012 or combinations splitted by comma
-    devkit_path : str
-        root directory of dataset
-    shuffle : bool
-        whether to shuffle initial list
-
-    Returns:
-    ----------
-    Imdb
-    """
-    image_set = [y.strip() for y in image_set.split(',')]
-    assert image_set, "No image_set specified"
-    year = [y.strip() for y in year.split(',')]
-    assert year, "No year specified"
-
-    # make sure (# sets == # years)
-    if len(image_set) > 1 and len(year) == 1:
-        year = year * len(image_set)
-    if len(image_set) == 1 and len(year) > 1:
-        image_set = image_set * len(year)
-    assert len(image_set) == len(year), "Number of sets and year mismatch"
-
-    imdbs = []
-    for s, y in zip(image_set, year):
-        imdbs.append(PascalVoc(s, y, devkit_path, shuffle, is_train=True))
-    if len(imdbs) > 1:
-        return ConcatDB(imdbs, shuffle)
-    else:
-        return imdbs[0]
 
 def convert_pretrained(name, args):
     """
@@ -72,200 +32,15 @@ def convert_pretrained(name, args):
         del args['fc8_bias']
     return args
 
-def train_net1(net, dataset, image_set, year, devkit_path, batch_size,
-               data_shape, mean_pixels, resume, finetune, pretrained, epoch, prefix,
-               ctx, begin_epoch, end_epoch, frequent, learning_rate,
-               momentum, weight_decay, val_set, val_year,
-               lr_refactor_epoch, lr_refactor_ratio,
-               iter_monitor=0, log_file=None):
-    """
-    Wrapper for training module
-
-    Parameters:
-    ---------
-    net : mx.Symbol
-        training network
-    dataset : str
-        pascal, imagenet...
-    image_set : str
-        train, trainval...
-    year : str
-        2007, 2012 or combinations splitted by comma
-    devkit_path : str
-        root directory of dataset
-    batch_size : int
-        training batch size
-    data_shape : int or (int, int)
-        resize image size
-    mean_pixels : tuple (float, float, float)
-        mean pixel values in (R, G, B)
-    resume : int
-        if > 0, will load trained epoch with name given by prefix
-    finetune : int
-        if > 0, will load trained epoch with name given by prefix, in this mode
-        all convolutional layers except the last(prediction layer) are fixed
-    pretrained : str
-        prefix of pretrained model name
-    epoch : int
-        epoch of pretrained model
-    prefix : str
-        prefix of new model
-    ctx : mx.gpu(?) or list of mx.gpu(?)
-        training context
-    begin_epoch : int
-        begin epoch, default should be 0
-    end_epoch : int
-        when to stop training
-    frequent : int
-        frequency to log out batch_end_callback
-    learning_rate : float
-        learning rate, will be divided by batch_size automatically
-    momentum : float
-        (0, 1), training momentum
-    weight_decay : float
-        decay weights regardless of gradient
-    val_set : str
-        similar to image_set, used for validation
-    val_year : str
-        similar to year, used for validation
-    lr_refactor_epoch : int
-        number of epoch to change learning rate
-    lr_refactor_ratio : float
-        new_lr = old_lr * lr_refactor_ratio
-    iter_monitor : int
-        if larger than 0, will print weights/gradients every iter_monitor iters
-    log_file : str
-        log to file if not None
-
-    Returns:
-    ---------
-    None
-    """
-    # set up logger
-    logging.basicConfig()
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-    if log_file:
-        fh = logging.FileHandler(log_file)
-        logger.addHandler(fh)
-
-    # check args
-    if isinstance(data_shape, int):
-        data_shape = (data_shape, data_shape)
-    assert len(data_shape) == 2, "data_shape must be (h, w) tuple or list or int"
-    prefix += '_' + str(data_shape[0])
-
-    if isinstance(mean_pixels, (int, float)):
-        mean_pixels = [mean_pixels, mean_pixels, mean_pixels]
-    assert len(mean_pixels) == 3, "must provide all RGB mean values"
-
-    # load dataset
-    if dataset == 'pascal':
-        imdb = load_pascal(image_set, year, devkit_path, cfg.TRAIN.INIT_SHUFFLE)
-        if val_set and val_year:
-            val_imdb = load_pascal(val_set, val_year, devkit_path, False)
-        else:
-            val_imdb = None
-    else:
-        raise NotImplementedError, "Dataset " + dataset + " not supported"
-
-    # init data iterator
-    train_iter = DetIter(imdb, batch_size, data_shape, mean_pixels,
-                         cfg.TRAIN.RAND_SAMPLERS, cfg.TRAIN.RAND_MIRROR,
-                         cfg.TRAIN.EPOCH_SHUFFLE, cfg.TRAIN.RAND_SEED,
-                         is_train=True)
-    # save per N epoch, avoid saving too frequently
-    resize_epoch = int(cfg.TRAIN.RESIZE_EPOCH)
-    if resize_epoch > 1:
-        batches_per_epoch = ((imdb.num_images - 1) / batch_size + 1) * resize_epoch
-        train_iter = mx.io.ResizeIter(train_iter, batches_per_epoch)
-    train_iter = mx.io.PrefetchingIter(train_iter)
-    if val_imdb:
-        val_iter = DetIter(val_imdb, batch_size, data_shape, mean_pixels,
-                           cfg.VALID.RAND_SAMPLERS, cfg.VALID.RAND_MIRROR,
-                           cfg.VALID.EPOCH_SHUFFLE, cfg.VALID.RAND_SEED,
-                           is_train=True)
-        val_iter = mx.io.PrefetchingIter(val_iter)
-    else:
-        val_iter = None
-
-    # load symbol
-    sys.path.append(os.path.join(cfg.ROOT_DIR, 'symbol'))
-    net = importlib.import_module("symbol_" + net).get_symbol_train(imdb.num_classes)
-
-    # define layers with fixed weight/bias
-    fixed_param_names = [name for name in net.list_arguments() \
-        if name.startswith('conv1_') or name.startswith('conv2_')]
-
-    # load pretrained or resume from previous state
-    ctx_str = '('+ ','.join([str(c) for c in ctx]) + ')'
-    if resume > 0:
-        logger.info("Resume training with {} from epoch {}"
-            .format(ctx_str, resume))
-        _, args, auxs = mx.model.load_checkpoint(prefix, resume)
-        begin_epoch = resume
-    elif finetune > 0:
-        logger.info("Start finetuning with {} from epoch {}"
-            .format(ctx_str, finetune))
-        _, args, auxs = mx.model.load_checkpoint(prefix, finetune)
-        begin_epoch = finetune
-        # the prediction convolution layers name starts with relu, so it's fine
-        fixed_param_names = [name for name in net.list_arguments() \
-            if name.startswith('conv')]
-    elif pretrained:
-        logger.info("Start training with {} from pretrained model {}"
-            .format(ctx_str, pretrained))
-        _, args, auxs = mx.model.load_checkpoint(pretrained, epoch)
-        args = convert_pretrained(pretrained, args)
-    else:
-        logger.info("Experimental: start training from scratch with {}"
-            .format(ctx_str))
-        args = None
-        auxs = None
-        fixed_param_names = None
-
-    # helper information
-    if fixed_param_names:
-        logger.info("Freezed parameters: [" + ','.join(fixed_param_names) + ']')
-
-    # init training module
-    mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
-                        fixed_param_names=fixed_param_names)
-
-    # fit
-    batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
-    epoch_end_callback = mx.callback.do_checkpoint(prefix)
-    iter_refactor = lr_refactor_epoch * imdb.num_images / train_iter.batch_size
-    lr_scheduler = mx.lr_scheduler.FactorScheduler(iter_refactor, lr_refactor_ratio)
-    optimizer_params={'learning_rate':learning_rate,
-                      'momentum':momentum,
-                      'wd':weight_decay,
-                      'lr_scheduler':lr_scheduler,
-                      'clip_gradient':None,
-                      'rescale_grad': 1.0}
-    monitor = mx.mon.Monitor(iter_monitor, pattern=".*") if iter_monitor > 0 else None
-
-    mod.fit(train_iter,
-            eval_data=val_iter,
-            eval_metric=MultiBoxMetric(),
-            batch_end_callback=batch_end_callback,
-            epoch_end_callback=epoch_end_callback,
-            optimizer='sgd',
-            optimizer_params=optimizer_params,
-            begin_epoch=begin_epoch,
-            num_epoch=end_epoch,
-            initializer=CustomInitializer(factor_type="in", magnitude=1),
-            arg_params=args,
-            aux_params=auxs,
-            allow_missing=True,
-            monitor=monitor)
-
 def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
               data_shape, mean_pixels, brightness, contrast, saturation,
               pca_noise, resume, finetune, pretrained, epoch,
               prefix, ctx, begin_epoch, end_epoch, frequent, learning_rate,
-              momentum, weight_decay,
-              lr_refactor_step, lr_refactor_ratio, iter_monitor=0, log_file=None):
+              momentum, weight_decay, lr_refactor_step, lr_refactor_ratio,
+              eval_batch_size=8, eval_interval=1, nms_thresh=0.45, force_nms=False,
+              ovp_thresh=0.5, use_difficult=False, class_names=None,
+              voc07_metric=False,
+              train_list="", val_list="", iter_monitor=0, log_file=None):
     """
 
     """
@@ -299,13 +74,15 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
     #     contrast=contrast, saturation=saturation, pca_noise=pca_noise,
     #     shuffle=cfg.TRAIN.EPOCH_SHUFFLE, rand_crop=cfg.TRAIN.RAND_CROPS,
     #     rand_pad=cfg.TRAIN.RAND_PAD, rand_mirror=cfg.TRAIN.RAND_MIRROR)
-    train_iter = DetRecordIter(train_path, batch_size, data_shape, label_pad_width=300, **cfg.train)
+    train_iter = DetRecordIter(train_path, batch_size, data_shape,
+                               path_imglist=train_list, **cfg.train)
 
     if val_path:
         # val_iter = mx.image.ImageDetIter(
         #     batch_size, data_shape, path_imgrec=val_path.replace('.lst', '.rec'), path_imgidx=val_path.replace('.lst', '.idx'),
         #     mean=mean_pixels)
-        val_iter = DetRecordIter(val_path, batch_size, data_shape, label_pad_width=300, **cfg.valid)
+        val_iter = DetRecordIter(val_path, eval_batch_size, data_shape,
+                                 path_imglist=val_list, **cfg.valid)
         # synchronize label_shape to avoid reshaping executer
         # label_shape = map(max, train_iter.label_shape, val_iter.label_shape)
         # train_iter.reshape(label_shape=label_shape)
@@ -315,7 +92,8 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
 
     # load symbol
     sys.path.append(os.path.join(cfg.ROOT_DIR, 'symbol'))
-    net = importlib.import_module("symbol_" + net).get_symbol_train(num_classes)
+    symbol_module = importlib.import_module("symbol_" + net)
+    net = symbol_module.get_symbol_train(num_classes)
 
     # define layers with fixed weight/bias
     fixed_param_names = [name for name in net.list_arguments() \
@@ -355,6 +133,11 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
     # init training module
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
                         fixed_param_names=fixed_param_names)
+    # init evaluation module
+    val_net = symbol_module.get_symbol_eval(num_classes, nms_thresh, force_nms)
+    val_mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx)
+    val_mod.bind(data_shapes=val_iter.provide_data, label_shapes=val_iter.provide_label,
+                 for_training=False)
 
     # fit
     batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
@@ -371,17 +154,33 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
                       'rescale_grad': 1.0}
     monitor = mx.mon.Monitor(iter_monitor, pattern=".*") if iter_monitor > 0 else None
 
-    mod.fit(train_iter,
-            eval_data=val_iter,
-            eval_metric=MultiBoxMetric(),
-            batch_end_callback=batch_end_callback,
-            epoch_end_callback=epoch_end_callback,
-            optimizer='sgd',
-            optimizer_params=optimizer_params,
-            begin_epoch=begin_epoch,
-            num_epoch=end_epoch,
-            initializer=CustomInitializer(factor_type="in", magnitude=1),
-            arg_params=args,
-            aux_params=auxs,
-            allow_missing=True,
-            monitor=monitor)
+    # run fit net, every n epochs we run evaluation network to get mAP
+    if voc07_metric:
+        eval_metric = VOC07MApMetric(ovp_thresh, use_difficult, class_names)
+    else:
+        eval_metric = MApMetric(ovp_thresh, use_difficult, class_names)
+    eval_interval = max(1, int(eval_interval))
+    eval_checkpoints = range(begin_epoch, end_epoch, eval_interval)[1:] + [end_epoch]
+    for end_epoch in eval_checkpoints:
+        mod.fit(train_iter,
+                eval_metric=MultiBoxMetric(),
+                batch_end_callback=batch_end_callback,
+                epoch_end_callback=epoch_end_callback,
+                optimizer='sgd',
+                optimizer_params=optimizer_params,
+                begin_epoch=begin_epoch,
+                num_epoch=end_epoch,
+                initializer=CustomInitializer(factor_type="in", magnitude=1),
+                arg_params=args,
+                aux_params=auxs,
+                allow_missing=True,
+                monitor=monitor)
+        begin_epoch = end_epoch
+        args, auxs = mod.get_params()
+        val_mod.set_params(args, auxs, allow_missing=False)
+        results = val_mod.score(val_iter,
+                      eval_metric=eval_metric,
+                      score_end_callback=mx.callback.Speedometer(val_iter.batch_size),
+                      epoch=end_epoch)
+        for k, v in results:
+            print("{}: {}".format(k, v))

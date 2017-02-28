@@ -142,7 +142,38 @@ def get_symbol_train(num_classes=20):
     out = mx.symbol.Group([cls_prob, loc_loss, cls_label])
     return out
 
-def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=True):
+def get_symbol_eval(num_classes=20, nms_thresh=0.5, force_suppress=True, nms_topk=400):
+    """
+    Single-shot multi-box detection with VGG 16 layers ConvNet
+    This is a modified version, with fc6/fc7 layers replaced by conv layers
+    And the network is slightly smaller than original VGG 16 network
+    This is the evaluation network
+
+    Parameters:
+    ----------
+    num_classes: int
+        number of object classes not including background
+    nms_thresh : float
+        threshold of overlap for non-maximum suppression
+
+    Returns:
+    ----------
+    mx.Symbol
+    """
+    net = get_symbol_train(num_classes)
+    cls_preds = net.get_internals()["multibox_cls_pred_output"]
+    loc_preds = net.get_internals()["multibox_loc_pred_output"]
+    anchor_boxes = net.get_internals()["multibox_anchors_output"]
+    label = net.get_internals()["label"]
+
+    cls_prob = mx.symbol.SoftmaxActivation(data=cls_preds, mode='channel', \
+        name='cls_prob')
+    out = mx.symbol.MultiBoxDetection(*[cls_prob, loc_preds, anchor_boxes], \
+        name="detection", nms_threshold=nms_thresh, force_suppress=force_suppress,
+        variances=(0.1, 0.1, 0.2, 0.2), nms_topk=nms_topk)
+    return mx.sym.Group([out, label])
+
+def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=True, nms_topk=400):
     """
     Single-shot multi-box detection with VGG 16 layers ConvNet
     This is a modified version, with fc6/fc7 layers replaced by conv layers
@@ -172,5 +203,5 @@ def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=True):
     # out = mx.symbol.Group([loc_preds, cls_preds, anchor_boxes])
     out = mx.symbol.MultiBoxDetection(*[cls_prob, loc_preds, anchor_boxes], \
         name="detection", nms_threshold=nms_thresh, force_suppress=force_suppress,
-        variances=(0.1, 0.1, 0.2, 0.2))
+        variances=(0.1, 0.1, 0.2, 0.2), nms_topk=nms_topk)
     return out

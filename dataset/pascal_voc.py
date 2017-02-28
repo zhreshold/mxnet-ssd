@@ -153,8 +153,8 @@ class PascalVoc(Imdb):
 
             for obj in root.iter('object'):
                 difficult = int(obj.find('difficult').text)
-                if not self.config['use_difficult'] and difficult == 1:
-                    continue
+                # if not self.config['use_difficult'] and difficult == 1:
+                #     continue
                 cls_name = obj.find('name').text
                 if cls_name not in self.classes:
                     continue
@@ -164,7 +164,7 @@ class PascalVoc(Imdb):
                 ymin = float(xml_box.find('ymin').text) / height
                 xmax = float(xml_box.find('xmax').text) / width
                 ymax = float(xml_box.find('ymax').text) / height
-                label.append([cls_id, xmin, ymin, xmax, ymax])
+                label.append([cls_id, xmin, ymin, xmax, ymax, difficult])
             temp.append(np.array(label))
         return temp
 

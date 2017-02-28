@@ -38,7 +38,7 @@ def parse_args():
                         default=20, type=int)
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                         help='set image shape')
-    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.0001,
+    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.001,
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
                         help='momentum')
@@ -68,19 +68,21 @@ def parse_args():
                         help='log network parameters every N iters if larger than 0')
     parser.add_argument('--num-class', dest='num_class', type=int, default=20,
                         help='number of classes')
-    parser.add_argument('--thread', dest='n_thread', type=int, default=6,
-                        help='number of cpu threads to use')
+    parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.45,
+                        help='non-maximum suppression threshold')
+    parser.add_argument('--overlap', dest='overlap_thresh', type=float, default=0.5,
+                        help='evaluation overlap threshold')
+    parser.add_argument('--force', dest='force_nms', type=bool, default=False,
+                        help='force non-maximum suppression on different class')
+    parser.add_argument('--use-difficult', dest='use_difficult', type=bool, default=False,
+                        help='use difficult ground-truths in evaluation')
+    parser.add_argument('--voc07', dest='use_voc07_metric', type=bool, default=True,
+                        help='use PASCAL VOC 07 metric')
     args = parser.parse_args()
     return args
 
 if __name__ == '__main__':
     args = parse_args()
-    try:
-        cpu_count = multiprocessing.cpu_count()
-        n_thread = min(cpu_count - 1, args.n_thread)
-    except NotImplementedError:
-        n_thread = args.n_thread
-    os.environ["MXNET_CPU_WORKER_NTHREADS"] = str(n_thread)
     ctx = [mx.gpu(int(i)) for i in args.gpus.split(',')]
     ctx = mx.cpu() if not ctx else ctx
     train_net(args.network, args.train_path, args.val_path, args.devkit_path,
@@ -90,5 +92,6 @@ if __name__ == '__main__':
               args.resume, args.finetune, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
-              args.lr_refactor_step,
-              args.lr_refactor_ratio, args.monitor, args.log_file)
+              args.lr_refactor_step, args.lr_refactor_ratio,
+              iter_monitor=args.monitor,
+              log_file=args.log_file)

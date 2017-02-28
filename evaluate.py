@@ -18,10 +18,10 @@ def parse_args():
     parser.add_argument('--list-path', dest='list_path', help='which list file to use',
                         default="", type=str)
     parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
-                        choices=['vgg16_reduced'], help='which network to use')
+                        choices=['vgg16_reduced', 'ssd_300'], help='which network to use')
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=32,
                         help='evaluation batch size')
-    parser.add_argument('--num-class', dest='num_classes', type=int, default=20,
+    parser.add_argument('--num-class', dest='num_class', type=int, default=20,
                         help='number of classes')
     parser.add_argument('--class-names', dest='class_names', type=str, default=",".join(CLASSES),
                         help='string of comma separated names, or text filename')
@@ -69,7 +69,7 @@ if __name__ == '__main__':
                 with open(args.class_names, 'r') as f:
                     class_names = [l.strip() for l in f.readlines()]
         else:
-            class_names = [c.strip() for c in args.classes.split(',')]
+            class_names = [c.strip() for c in args.class_names.split(',')]
         assert len(class_names) == num_class
         for name in class_names:
             assert len(name) > 0
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     #              args.prefix, args.epoch, ctx, year=args.year,
     #              sets=args.eval_set, batch_size=args.batch_size,
     #              nms_thresh=args.nms_thresh, force_nms=args.force_nms)
-    evaluate_net(args.network, args.rec_path, num_classes,
+    evaluate_net(args.network, args.rec_path, num_class,
                  (args.mean_r, args.mean_g, args.mean_b), args.data_shape,
                  args.prefix, args.epoch, ctx, batch_size=args.batch_size,
                  path_imglist=args.list_path, nms_thresh=args.nms_thresh,

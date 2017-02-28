@@ -144,8 +144,8 @@ class MultiBoxPriorProp: public OperatorProperty {
     CHECK_GT(in_width, 0) << "Input width should > 0";
     // since input sizes are same in each batch, we could share MultiBoxPrior
     TShape oshape = TShape(3);
-    int num_sizes = param_.sizes.info.size();
-    int num_ratios = param_.ratios.info.size();
+    int num_sizes = param_.sizes.ndim();
+    int num_ratios = param_.ratios.ndim();
     oshape[0] = 1;
     oshape[1] = in_height * in_width * (num_sizes + num_ratios - 1);
     oshape[2] = 4;
