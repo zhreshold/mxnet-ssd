@@ -97,6 +97,13 @@ class MultiBoxDetectionOp : public Operator {
                         const std::vector<TBlob> &aux_states) {
     using namespace mshadow;
     using namespace mshadow::expr;
+    Stream<xpu> *s = ctx.get_stream<xpu>();
+    Tensor<xpu, 2, DType> gradc = in_grad[mboxdet_enum::kClsProb].FlatTo2D<xpu, DType>(s);
+    Tensor<xpu, 2, DType> gradl = in_grad[mboxdet_enum::kLocPred].FlatTo2D<xpu, DType>(s);
+    Tensor<xpu, 2, DType> grada = in_grad[mboxdet_enum::kAnchor].FlatTo2D<xpu, DType>(s);
+    gradc = 0.f;
+    gradl = 0.f;
+    grada = 0.f;
 }
 
  private:

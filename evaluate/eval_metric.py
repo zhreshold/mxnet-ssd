@@ -3,7 +3,7 @@ import numpy as np
 
 class MApMetric(mx.metric.EvalMetric):
     """ Calculate mean AP for object detection task """
-    def __init__(self, ovp_thresh=0.5, use_difficult=False, class_names=None):
+    def __init__(self, ovp_thresh=0.5, use_difficult=False, class_names=None, pred_idx=0):
         if class_names is None:
             super(MApMetric, self).__init__("mAP")
         else:
@@ -17,6 +17,7 @@ class MApMetric(mx.metric.EvalMetric):
         self.ovp_thresh = ovp_thresh
         self.use_difficult = use_difficult
         self.class_names = class_names
+        self.pred_idx = int(pred_idx)
 
     def reset(self):
         """Clear the internal statistics to initial state."""
@@ -90,7 +91,7 @@ class MApMetric(mx.metric.EvalMetric):
         for i in range(labels[0].shape[0]):
             # get as numpy arrays
             label = labels[0][i].asnumpy()
-            pred = preds[0][i].asnumpy()
+            pred = preds[self.pred_idx][i].asnumpy()
             # calculate for each class
             while (pred.shape[0] > 0):
                 cid = int(pred[0, 0])
@@ -139,7 +140,7 @@ class MApMetric(mx.metric.EvalMetric):
                 # now we push records to buffer
                 # first column: score, second column: tp/fp
                 # 0: not set(matched to difficult or something), 1: tp, 2: fp
-                # records = records[np.where(records[:, -1] > 0)[0], :]
+                records = records[np.where(records[:, -1] > 0)[0], :]
                 if records.size > 0:
                     self._insert(cid, records, gt_count)
 

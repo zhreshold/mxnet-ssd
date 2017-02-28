@@ -6,6 +6,12 @@ import sys
 import multiprocessing
 from train.train_net import train_net
 
+CLASSES = ('aeroplane', 'bicycle', 'bird', 'boat',
+           'bottle', 'bus', 'car', 'cat', 'chair',
+           'cow', 'diningtable', 'dog', 'horse',
+           'motorbike', 'person', 'pottedplant',
+           'sheep', 'sofa', 'train', 'tvmonitor')
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a Single-shot detection network')
     parser.add_argument('--train-path', dest='train_path', help='train record to use',
@@ -14,8 +20,8 @@ def parse_args():
                         default=os.path.join(os.getcwd(), 'data', 'val.rec'), type=str)
     parser.add_argument('--devkit-path', dest='devkit_path', help='VOCdevkit path',
                         default=os.path.join(os.getcwd(), 'data', 'VOCdevkit'), type=str)
-    parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
-                        choices=['vgg16_reduced'], help='which network to use')
+    parser.add_argument('--network', dest='network', type=str, default='ssd_300',
+                        choices=['vgg16_reduced', 'ssd_300'], help='which network to use')
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=32,
                         help='training batch size')
     parser.add_argument('--resume', dest='resume', type=int, default=-1,
@@ -68,6 +74,9 @@ def parse_args():
                         help='log network parameters every N iters if larger than 0')
     parser.add_argument('--num-class', dest='num_class', type=int, default=20,
                         help='number of classes')
+    parser.add_argument('--class-names', dest='class_names', type=str,
+                        default=",".join(CLASSES),
+                        help='string of comma separated names, or text filename')
     parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.45,
                         help='non-maximum suppression threshold')
     parser.add_argument('--overlap', dest='overlap_thresh', type=float, default=0.5,
@@ -85,6 +94,20 @@ if __name__ == '__main__':
     args = parse_args()
     ctx = [mx.gpu(int(i)) for i in args.gpus.split(',')]
     ctx = mx.cpu() if not ctx else ctx
+    # parse # classes and class_names if applicable
+    num_class = args.num_class
+    if len(args.class_names) > 0:
+        if os.path.isfile(args.class_names):
+                # try to open it to read class names
+                with open(args.class_names, 'r') as f:
+                    class_names = [l.strip() for l in f.readlines()]
+        else:
+            class_names = [c.strip() for c in args.class_names.split(',')]
+        assert len(class_names) == num_class
+        for name in class_names:
+            assert len(name) > 0
+    else:
+        class_names = None
     train_net(args.network, args.train_path, args.val_path, args.devkit_path,
               args.num_class, args.batch_size,
               args.data_shape, (args.mean_r, args.mean_g, args.mean_b),
@@ -93,5 +116,6 @@ if __name__ == '__main__':
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
               args.lr_refactor_step, args.lr_refactor_ratio,
+              class_names=class_names,
               iter_monitor=args.monitor,
               log_file=args.log_file)

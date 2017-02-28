@@ -2,7 +2,7 @@ import mxnet as mx
 from common import conv_act_layer
 from common import multibox_layer
 
-def get_symbol_train(num_classes=20):
+def get_symbol_train(num_classes=20, nms_thresh=0.5, force_suppress=False, nms_topk=400):
     """
     Single-shot multi-box detection with VGG 16 layers ConvNet
     This is a modified version, with fc6/fc7 layers replaced by conv layers
@@ -138,12 +138,16 @@ def get_symbol_train(num_classes=20):
 
     # monitoring training status
     cls_label = mx.symbol.MakeLoss(data=cls_target, grad_scale=0, name="cls_label")
+    det = mx.symbol.MultiBoxDetection(*[cls_prob, loc_preds, anchor_boxes], \
+        name="detection", nms_threshold=nms_thresh, force_suppress=force_suppress,
+        variances=(0.1, 0.1, 0.2, 0.2), nms_topk=nms_topk)
+    det = mx.symbol.MakeLoss(data=det, grad_scale=0, name="det_out")
 
     # group output
-    out = mx.symbol.Group([cls_prob, loc_loss, cls_label])
+    out = mx.symbol.Group([cls_prob, loc_loss, cls_label, det])
     return out
 
-def get_symbol_eval(num_classes=20, nms_thresh=0.5, force_suppress=True, nms_topk=400):
+def get_symbol_eval(num_classes=20, nms_thresh=0.5, force_suppress=False, nms_topk=400):
     """
     Single-shot multi-box detection with VGG 16 layers ConvNet
     This is a modified version, with fc6/fc7 layers replaced by conv layers
@@ -174,7 +178,7 @@ def get_symbol_eval(num_classes=20, nms_thresh=0.5, force_suppress=True, nms_top
         variances=(0.1, 0.1, 0.2, 0.2), nms_topk=nms_topk)
     return mx.sym.Group([out, label])
 
-def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=True):
+def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=False):
     """
     Single-shot multi-box detection with VGG 16 layers ConvNet
     This is a modified version, with fc6/fc7 layers replaced by conv layers
@@ -193,15 +197,12 @@ def get_symbol(num_classes=20, nms_thresh=0.5, force_suppress=True):
     mx.Symbol
     """
     net = get_symbol_train(num_classes)
-    # print net.get_internals().list_outputs()
     cls_preds = net.get_internals()["multibox_cls_pred_output"]
     loc_preds = net.get_internals()["multibox_loc_pred_output"]
     anchor_boxes = net.get_internals()["multibox_anchors_output"]
 
     cls_prob = mx.symbol.SoftmaxActivation(data=cls_preds, mode='channel', \
         name='cls_prob')
-    # group output
-    # out = mx.symbol.Group([loc_preds, cls_preds, anchor_boxes])
     out = mx.symbol.MultiBoxDetection(*[cls_prob, loc_preds, anchor_boxes], \
         name="detection", nms_threshold=nms_thresh, force_suppress=force_suppress,
         variances=(0.1, 0.1, 0.2, 0.2))

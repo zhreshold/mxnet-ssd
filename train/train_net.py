@@ -37,9 +37,10 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
               pca_noise, resume, finetune, pretrained, epoch,
               prefix, ctx, begin_epoch, end_epoch, frequent, learning_rate,
               momentum, weight_decay, lr_refactor_step, lr_refactor_ratio,
+              label_pad_width=350,
               eval_batch_size=8, eval_interval=1, nms_thresh=0.45, force_nms=False,
               ovp_thresh=0.5, use_difficult=False, class_names=None,
-              voc07_metric=False,
+              voc07_metric=False, nms_topk=400, force_suppress=False,
               train_list="", val_list="", iter_monitor=0, log_file=None):
     """
 
@@ -75,14 +76,14 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
     #     shuffle=cfg.TRAIN.EPOCH_SHUFFLE, rand_crop=cfg.TRAIN.RAND_CROPS,
     #     rand_pad=cfg.TRAIN.RAND_PAD, rand_mirror=cfg.TRAIN.RAND_MIRROR)
     train_iter = DetRecordIter(train_path, batch_size, data_shape,
-                               path_imglist=train_list, **cfg.train)
+        label_pad_width=label_pad_width, path_imglist=train_list, **cfg.train)
 
     if val_path:
         # val_iter = mx.image.ImageDetIter(
         #     batch_size, data_shape, path_imgrec=val_path.replace('.lst', '.rec'), path_imgidx=val_path.replace('.lst', '.idx'),
         #     mean=mean_pixels)
-        val_iter = DetRecordIter(val_path, eval_batch_size, data_shape,
-                                 path_imglist=val_list, **cfg.valid)
+        val_iter = DetRecordIter(val_path, batch_size, data_shape,
+            label_pad_width=label_pad_width, path_imglist=val_list, **cfg.valid)
         # synchronize label_shape to avoid reshaping executer
         # label_shape = map(max, train_iter.label_shape, val_iter.label_shape)
         # train_iter.reshape(label_shape=label_shape)
@@ -93,7 +94,8 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
     # load symbol
     sys.path.append(os.path.join(cfg.ROOT_DIR, 'symbol'))
     symbol_module = importlib.import_module("symbol_" + net)
-    net = symbol_module.get_symbol_train(num_classes)
+    net = symbol_module.get_symbol_train(num_classes, nms_thresh=nms_thresh,
+        force_suppress=force_suppress, nms_topk=nms_topk)
 
     # define layers with fixed weight/bias
     fixed_param_names = [name for name in net.list_arguments() \
@@ -134,10 +136,10 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
                         fixed_param_names=fixed_param_names)
     # init evaluation module
-    val_net = symbol_module.get_symbol_eval(num_classes, nms_thresh, force_nms)
-    val_mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx)
-    val_mod.bind(data_shapes=val_iter.provide_data, label_shapes=val_iter.provide_label,
-                 for_training=False)
+    # val_net = symbol_module.get_symbol_eval(num_classes, nms_thresh, force_nms)
+    # val_mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx)
+    # val_mod.bind(data_shapes=val_iter.provide_data, label_shapes=val_iter.provide_label,
+    #              for_training=False)
 
     # fit
     batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
@@ -156,31 +158,22 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
 
     # run fit net, every n epochs we run evaluation network to get mAP
     if voc07_metric:
-        eval_metric = VOC07MApMetric(ovp_thresh, use_difficult, class_names)
+        valid_metric = VOC07MApMetric(ovp_thresh, use_difficult, class_names, pred_idx=3)
     else:
-        eval_metric = MApMetric(ovp_thresh, use_difficult, class_names)
-    eval_interval = max(1, int(eval_interval))
-    eval_checkpoints = range(begin_epoch, end_epoch, eval_interval)[1:] + [end_epoch]
-    for end_epoch in eval_checkpoints:
-        mod.fit(train_iter,
-                eval_metric=MultiBoxMetric(),
-                batch_end_callback=batch_end_callback,
-                epoch_end_callback=epoch_end_callback,
-                optimizer='sgd',
-                optimizer_params=optimizer_params,
-                begin_epoch=begin_epoch,
-                num_epoch=end_epoch,
-                initializer=CustomInitializer(factor_type="in", magnitude=1),
-                arg_params=args,
-                aux_params=auxs,
-                allow_missing=True,
-                monitor=monitor)
-        begin_epoch = end_epoch
-        args, auxs = mod.get_params()
-        val_mod.set_params(args, auxs, allow_missing=False)
-        results = val_mod.score(val_iter,
-                      eval_metric=eval_metric,
-                      score_end_callback=mx.callback.Speedometer(val_iter.batch_size),
-                      epoch=end_epoch)
-        for k, v in results:
-            print("{}: {}".format(k, v))
+        valid_metric = MApMetric(ovp_thresh, use_difficult, class_names, pred_idx=3)
+
+    mod.fit(train_iter,
+            val_iter,
+            eval_metric=MultiBoxMetric(),
+            validation_metric=valid_metric,
+            batch_end_callback=batch_end_callback,
+            epoch_end_callback=epoch_end_callback,
+            optimizer='sgd',
+            optimizer_params=optimizer_params,
+            begin_epoch=begin_epoch,
+            num_epoch=end_epoch,
+            initializer=CustomInitializer(factor_type="in", magnitude=1),
+            arg_params=args,
+            aux_params=auxs,
+            allow_missing=True,
+            monitor=monitor)
