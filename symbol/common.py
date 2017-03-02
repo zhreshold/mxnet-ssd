@@ -115,15 +115,10 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
         if normalization[k] > 0:
             from_layer = mx.symbol.L2Normalization(data=from_layer, \
                 mode="channel", name="{}_norm".format(from_name))
-            # from_layer = mx.symbol.NaiveScale(data=from_layer, mode="spatial", \
-            #     name="{}_scale_{}".format(from_name, normalization[k]))
-            # scale = mx.symbol.InferedVariable(data=from_layer, shape=(1, 0, 1, 1),
-            #     suffix="{}_scale".format(normalization[k]),
-            #     name="{}_scale".format(from_name))
             scale = mx.symbol.Variable(name="{}_scale".format(from_name),
-                shape=(1, num_channels.pop(0), 1, 1))
-            # scale = mx.symbol.Reshape(data=scale, shape=(1, 512, 1, 1))
-            from_layer = normalization[k] * mx.symbol.broadcast_mul(lhs=scale, rhs=from_layer)
+                shape=(1, num_channels.pop(0), 1, 1),
+                init=mx.init.Constant(normalization[k]))
+            from_layer = mx.symbol.broadcast_mul(lhs=scale, rhs=from_layer)
         if interm_layer > 0:
             from_layer = mx.symbol.Convolution(data=from_layer, kernel=(3,3), \
                 stride=(1,1), pad=(1,1), num_filter=interm_layer, \

@@ -12,9 +12,10 @@ template<typename DType>
 inline void MultiBoxPriorForward(const Tensor<cpu, 2, DType> &out,
                             const std::vector<float> &sizes,
                             const std::vector<float> &ratios,
-                            const int in_width, const int in_height) {
-  const float step_x = 1.f / in_width;
-  const float step_y = 1.f / in_height;
+                            const int in_width, const int in_height,
+                            const std::vector<float> &steps) {
+  const float step_x = steps[1];
+  const float step_y = steps[0];
   const int num_sizes = static_cast<int>(sizes.size());
   const int num_ratios = static_cast<int>(ratios.size());
   int count = 0;

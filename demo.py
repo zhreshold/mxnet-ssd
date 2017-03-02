@@ -35,8 +35,9 @@ def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx,
         force suppress different categories
     """
     sys.path.append(os.path.join(os.getcwd(), 'symbol'))
-    net = importlib.import_module("symbol_" + net) \
-        .get_symbol(len(CLASSES), nms_thresh, force_nms)
+    if net is not None:
+        net = importlib.import_module("symbol_" + net) \
+            .get_symbol(len(CLASSES), nms_thresh, force_nms)
     detector = Detector(net, prefix + "_" + str(data_shape), epoch, \
         data_shape, mean_pixels, ctx=ctx)
     return detector
@@ -75,6 +76,8 @@ def parse_args():
                         help='force non-maximum suppression on different class')
     parser.add_argument('--timer', dest='show_timer', type=bool, default=True,
                         help='show detection time')
+    parser.add_argument('--deploy', dest='deploy_net', help='Load network from model',
+                        action='store_true', default=False)
     args = parser.parse_args()
     return args
 
@@ -89,7 +92,8 @@ if __name__ == '__main__':
     image_list = [i.strip() for i in args.images.split(',')]
     assert len(image_list) > 0, "No valid image specified to detect"
 
-    detector = get_detector(args.network, args.prefix, args.epoch,
+    network = None if args.deploy_net else args.network
+    detector = get_detector(network, args.prefix, args.epoch,
                             args.data_shape,
                             (args.mean_r, args.mean_g, args.mean_b),
                             ctx, args.nms_thresh, args.force_nms)

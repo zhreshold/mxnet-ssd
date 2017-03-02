@@ -42,6 +42,7 @@ struct MultiBoxPriorParam : public dmlc::Parameter<MultiBoxPriorParam> {
   nnvm::Tuple<float> sizes;
   nnvm::Tuple<float> ratios;
   bool clip;
+  nnvm::Tuple<float> steps;
   DMLC_DECLARE_PARAMETER(MultiBoxPriorParam) {
     DMLC_DECLARE_FIELD(sizes).set_default({1.0f})
     .describe("List of sizes of generated MultiBoxPriores.");
@@ -49,6 +50,8 @@ struct MultiBoxPriorParam : public dmlc::Parameter<MultiBoxPriorParam> {
     .describe("List of aspect ratios of generated MultiBoxPriores.");
     DMLC_DECLARE_FIELD(clip).set_default(false)
     .describe("Whether to clip out-of-boundary boxes.");
+    DMLC_DECLARE_FIELD(steps).set_default({-1.f, -1.f})
+    .describe("Priorbox step across y and x, -1 for auto calculation.");
   }
 };  // struct MultiBoxPriorParam
 
@@ -57,9 +60,11 @@ class MultiBoxPriorOp : public Operator {
  public:
   explicit MultiBoxPriorOp(MultiBoxPriorParam param)
     : clip_(param.clip), sizes_(param.sizes.begin(), param.sizes.end()),
-    ratios_(param.ratios.begin(), param.ratios.end()) {
+    ratios_(param.ratios.begin(), param.ratios.end()),
+    steps_(param.steps.begin(), param.steps.end()) {
       CHECK_GT(sizes_.size(), 0);
       CHECK_GT(ratios_.size(), 0);
+      CHECK_EQ(steps_.size(), 2);
     }
 
   virtual void Forward(const OpContext &ctx,
@@ -86,7 +91,13 @@ class MultiBoxPriorOp : public Operator {
     const int num_anchors = num_sizes - 1 + num_ratios;  // anchors per location
     Shape<2> oshape = Shape2(num_anchors * in_width * in_height, 4);
     out = out_data[mboxprior_enum::kOut].get_with_shape<xpu, 2, DType>(oshape, s);
-    MultiBoxPriorForward(out, sizes_, ratios_, in_width, in_height);
+    CHECK_GE(steps_[0] * steps_[1], 0) << "Must specify both step_y and step_x";
+    if (steps_[0] <= 0 || steps_[1] <= 0) {
+      // estimate using layer shape
+      steps_[0] = 1.f / in_height;
+      steps_[1] = 1.f / in_width;
+    }
+    MultiBoxPriorForward(out, sizes_, ratios_, in_width, in_height, steps_);
 
     if (clip_) {
       Assign(out, req[mboxprior_enum::kOut], F<mshadow_op::clip_zero_one>(out));
@@ -111,6 +122,7 @@ class MultiBoxPriorOp : public Operator {
   bool clip_;
   std::vector<float> sizes_;
   std::vector<float> ratios_;
+  std::vector<float> steps_;
 };  // class MultiBoxPriorOp
 
 template<typename xpu>
@@ -151,6 +163,7 @@ class MultiBoxPriorProp: public OperatorProperty {
     oshape[2] = 4;
     out_shape->clear();
     out_shape->push_back(oshape);
+    CHECK_EQ(param_.steps.ndim(), 2) << "Step ndim must be 2: (step_y, step_x)";
     return true;
   }
 

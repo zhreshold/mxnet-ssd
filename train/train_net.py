@@ -75,14 +75,14 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
     #     contrast=contrast, saturation=saturation, pca_noise=pca_noise,
     #     shuffle=cfg.TRAIN.EPOCH_SHUFFLE, rand_crop=cfg.TRAIN.RAND_CROPS,
     #     rand_pad=cfg.TRAIN.RAND_PAD, rand_mirror=cfg.TRAIN.RAND_MIRROR)
-    train_iter = DetRecordIter(train_path, batch_size, data_shape,
+    train_iter = DetRecordIter(train_path, batch_size, data_shape, mean_pixels=mean_pixels,
         label_pad_width=label_pad_width, path_imglist=train_list, **cfg.train)
 
     if val_path:
         # val_iter = mx.image.ImageDetIter(
         #     batch_size, data_shape, path_imgrec=val_path.replace('.lst', '.rec'), path_imgidx=val_path.replace('.lst', '.idx'),
         #     mean=mean_pixels)
-        val_iter = DetRecordIter(val_path, batch_size, data_shape,
+        val_iter = DetRecordIter(val_path, batch_size, data_shape, mean_pixels=mean_pixels,
             label_pad_width=label_pad_width, path_imglist=val_list, **cfg.valid)
         # synchronize label_shape to avoid reshaping executer
         # label_shape = map(max, train_iter.label_shape, val_iter.label_shape)
@@ -172,7 +172,7 @@ def train_net(net, train_path, val_path, devkit_path, num_classes, batch_size,
             optimizer_params=optimizer_params,
             begin_epoch=begin_epoch,
             num_epoch=end_epoch,
-            initializer=CustomInitializer(factor_type="in", magnitude=1),
+            initializer=mx.init.Xavier(),
             arg_params=args,
             aux_params=auxs,
             allow_missing=True,
