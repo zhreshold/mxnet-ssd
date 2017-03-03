@@ -33,7 +33,9 @@ def evaluate_net(net, path_imgrec, num_classes, mean_pixels, data_shape,
     # network
     sys.path.append(os.path.join(cfg.ROOT_DIR, 'symbol'))
     net = importlib.import_module("symbol_" + net) \
-        .get_symbol_eval(num_classes, nms_thresh, force_nms)
+        .get_symbol(num_classes, nms_thresh, force_nms)
+    label = mx.sym.Variable(name='label')
+    net = mx.sym.Group([net, label])
     # model params
     _, args, auxs = mx.model.load_checkpoint(model_prefix, epoch)
     # init module

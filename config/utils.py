@@ -79,7 +79,9 @@ def config_as_dict(cfg):
     del ret['rand_crop_samplers']
     assert isinstance(cfg.rand_crop_samplers, list)
     ret = merge_dict(ret, zip_namedtuple(cfg.rand_crop_samplers))
-    ret['num_crop_sampler'] = len(cfg.rand_crop_samplers)  # must specify the #
+    num_crop_sampler = len(cfg.rand_crop_samplers)
+    ret['num_crop_sampler'] = num_crop_sampler  # must specify the #
+    ret['rand_crop_prob'] = 1.0 / (num_crop_sampler + 1) * num_crop_sampler
     # random padding params
     del ret['rand_pad']
     ret = merge_dict(ret, cfg.rand_pad._asdict())

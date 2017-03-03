@@ -30,7 +30,9 @@ def conv_act_layer(from_layer, name, num_filter, kernel=(1,1), pad=(0,0), \
     (conv, relu) mx.Symbols
     """
     assert not use_batchnorm, "batchnorm not yet supported"
-    conv = mx.symbol.Convolution(data=from_layer, kernel=kernel, pad=pad, \
+    bias = mx.symbol.Variable(name="conv{}_bias".format(name),
+        init=mx.init.Constant(0.0), attr={'__lr_mult__': '2.0'})
+    conv = mx.symbol.Convolution(data=from_layer, bias=bias, kernel=kernel, pad=pad, \
         stride=stride, num_filter=num_filter, name="conv{}".format(name))
     relu = mx.symbol.Activation(data=conv, act_type=act_type, \
         name="{}{}".format(act_type, name))
@@ -139,7 +141,9 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
 
         # create location prediction layer
         num_loc_pred = num_anchors * 4
-        loc_pred = mx.symbol.Convolution(data=from_layer, kernel=(3,3), \
+        bias = mx.symbol.Variable(name="{}_loc_pred_conv_bias".format(from_name),
+            init=mx.init.Constant(0.0), attr={'__lr_mult__': '2.0'})
+        loc_pred = mx.symbol.Convolution(data=from_layer, bias=bias, kernel=(3,3), \
             stride=(1,1), pad=(1,1), num_filter=num_loc_pred, \
             name="{}_loc_pred_conv".format(from_name))
         loc_pred = mx.symbol.transpose(loc_pred, axes=(0,2,3,1))
@@ -148,7 +152,9 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
 
         # create class prediction layer
         num_cls_pred = num_anchors * num_classes
-        cls_pred = mx.symbol.Convolution(data=from_layer, kernel=(3,3), \
+        bias = mx.symbol.Variable(name="{}_cls_pred_conv_bias".format(from_name),
+            init=mx.init.Constant(0.0), attr={'__lr_mult__': '2.0'})
+        cls_pred = mx.symbol.Convolution(data=from_layer, bias=bias, kernel=(3,3), \
             stride=(1,1), pad=(1,1), num_filter=num_cls_pred, \
             name="{}_cls_pred_conv".format(from_name))
         cls_pred = mx.symbol.transpose(cls_pred, axes=(0,2,3,1))

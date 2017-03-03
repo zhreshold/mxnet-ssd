@@ -31,6 +31,9 @@ class Detector(object):
         if self.ctx is None:
             self.ctx = mx.cpu()
         load_symbol, args, auxs = mx.model.load_checkpoint(model_prefix, epoch)
+        # print args['relu4_3_scale'].asnumpy().ravel()
+        # print args['conv4_3_norm_scale'].asnumpy().ravel()
+        # raise
         if symbol is None:
             symbol = load_symbol
         self.mod = mx.mod.Module(symbol, context=ctx)

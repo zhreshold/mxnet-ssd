@@ -166,7 +166,10 @@ class MApMetric(mx.metric.EvalMetric):
         sorted_records = record[record[:,0].argsort()[::-1]]
         tp = np.cumsum(sorted_records[:, 1].astype(int) == 1)
         fp = np.cumsum(sorted_records[:, 1].astype(int) == 2)
-        recall = tp / float(count)
+        if count <= 0:
+            recall = tp * 0.0
+        else:
+            recall = tp / float(count)
         prec = tp.astype(float) / (tp + fp)
         return recall, prec
 
