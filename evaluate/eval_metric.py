@@ -207,7 +207,7 @@ class MApMetric(mx.metric.EvalMetric):
         if key not in self.records:
             assert key not in self.counts
             self.records[key] = records
-            self.counts[key] = 0
+            self.counts[key] = count
         else:
             self.records[key] = np.vstack((self.records[key], records))
             assert key in self.counts

@@ -136,7 +136,7 @@ inline void MultiBoxTargetForward(const Tensor<cpu, 2, DType> &loc_target,
           }
           const DType *pp_overlaps = p_overlaps + j * num_labels;
           int best_gt = -1;
-          int max_iou = -1.0f;
+          float max_iou = -1.0f;
           for (int k = 0; k < num_valid_gt; ++k) {
             float iou = static_cast<float>(*(pp_overlaps + k));
             if (iou > max_iou) {
@@ -179,7 +179,7 @@ inline void MultiBoxTargetForward(const Tensor<cpu, 2, DType> &loc_target,
               // not yet calculated
               const DType *pp_overlaps = p_overlaps + j * num_labels;
               int best_gt = -1;
-              int max_iou = -1.0f;
+              float max_iou = -1.0f;
               for (int k = 0; k < num_valid_gt; ++k) {
                 float iou = static_cast<float>(*(pp_overlaps + k));
                 if (iou > max_iou) {
@@ -193,24 +193,25 @@ inline void MultiBoxTargetForward(const Tensor<cpu, 2, DType> &loc_target,
                 max_matches[j].first = max_iou;
                 max_matches[j].second = best_gt;
               }
-              if (max_matches[j].first < negative_mining_thresh &&
-                  max_matches[j].first >= 0) {
+            }
+            if (max_matches[j].first < negative_mining_thresh &&
+                anchor_flags[j] == -1) {
                 // calcuate class predictions
-                DType max_val = p_cls_preds[j];
-                DType max_val_pos = p_cls_preds[j + num_anchors];
-                for (int k = 2; k < num_classes; ++k) {
-                  DType tmp = p_cls_preds[j + num_anchors * k];
-                  if (tmp > max_val_pos) max_val_pos = tmp;
-                }
-                if (max_val_pos > max_val) max_val = max_val_pos;
-                DType sum = 0.f;
-                for (int k = 0; k < num_classes; ++k) {
-                  DType tmp = p_cls_preds[j + num_anchors * k];
-                  sum += std::exp(tmp - max_val);
-                }
-                max_val_pos = std::exp(max_val_pos - max_val) / sum;
-                temp.push_back(SortElemDescend(max_val_pos, j));
+              DType max_val = p_cls_preds[j];
+              DType max_val_pos = max_val;
+              for (int k = 1; k < num_classes; ++k) {
+                DType tmp = p_cls_preds[j + num_anchors * k];
+                if (tmp > max_val_pos) max_val_pos = tmp;
               }
+              DType sum = 0.f;
+              for (int k = 0; k < num_classes; ++k) {
+                DType tmp = p_cls_preds[j + num_anchors * k];
+                sum += std::exp(tmp - max_val);
+              }
+              max_val_pos = std::exp(max_val_pos - max_val) / sum;
+              // loss should be -log(x), but value does not matter, so skip log
+              DType loss = -max_val_pos;
+              temp.push_back(SortElemDescend(loss, j));
             }
           }  // end iterate anchors
 

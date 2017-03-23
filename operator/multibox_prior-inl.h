@@ -43,6 +43,7 @@ struct MultiBoxPriorParam : public dmlc::Parameter<MultiBoxPriorParam> {
   nnvm::Tuple<float> ratios;
   bool clip;
   nnvm::Tuple<float> steps;
+  nnvm::Tuple<float> offsets;
   DMLC_DECLARE_PARAMETER(MultiBoxPriorParam) {
     DMLC_DECLARE_FIELD(sizes).set_default({1.0f})
     .describe("List of sizes of generated MultiBoxPriores.");
@@ -52,6 +53,8 @@ struct MultiBoxPriorParam : public dmlc::Parameter<MultiBoxPriorParam> {
     .describe("Whether to clip out-of-boundary boxes.");
     DMLC_DECLARE_FIELD(steps).set_default({-1.f, -1.f})
     .describe("Priorbox step across y and x, -1 for auto calculation.");
+    DMLC_DECLARE_FIELD(offsets).set_default({0.5f, 0.5f})
+    .describe("Priorbox center offsets, y and x respectively");
   }
 };  // struct MultiBoxPriorParam
 
@@ -61,10 +64,16 @@ class MultiBoxPriorOp : public Operator {
   explicit MultiBoxPriorOp(MultiBoxPriorParam param)
     : clip_(param.clip), sizes_(param.sizes.begin(), param.sizes.end()),
     ratios_(param.ratios.begin(), param.ratios.end()),
-    steps_(param.steps.begin(), param.steps.end()) {
+    steps_(param.steps.begin(), param.steps.end()),
+    offsets_(param.offsets.begin(), param.offsets.end()) {
       CHECK_GT(sizes_.size(), 0);
       CHECK_GT(ratios_.size(), 0);
       CHECK_EQ(steps_.size(), 2);
+      CHECK_EQ(offsets_.size(), 2);
+      CHECK_GE(offsets_[0], 0.f);
+      CHECK_LE(offsets_[0], 1.f);
+      CHECK_GE(offsets_[1], 0.f);
+      CHECK_LE(offsets_[1], 1.f);
     }
 
   virtual void Forward(const OpContext &ctx,
@@ -75,11 +84,6 @@ class MultiBoxPriorOp : public Operator {
     using namespace mshadow;
     using namespace mshadow::expr;
     CHECK_EQ(static_cast<int>(in_data.size()), 1);
-    CHECK_GE(in_data[mboxprior_enum::kData].ndim(), 4);  // require spatial information
-    int in_height = in_data[mboxprior_enum::kData].size(2);
-    CHECK_GT(in_height, 0);
-    int in_width = in_data[mboxprior_enum::kData].size(3);
-    CHECK_GT(in_width, 0);
     CHECK_EQ(out_data.size(), 1);
     Stream<xpu> *s = ctx.get_stream<xpu>();
     Tensor<xpu, 2, DType> out;
@@ -89,6 +93,8 @@ class MultiBoxPriorOp : public Operator {
     const int num_sizes = static_cast<int>(sizes_.size());
     const int num_ratios = static_cast<int>(ratios_.size());
     const int num_anchors = num_sizes - 1 + num_ratios;  // anchors per location
+    int in_height = in_data[mboxprior_enum::kData].size(2);
+    int in_width = in_data[mboxprior_enum::kData].size(3);
     Shape<2> oshape = Shape2(num_anchors * in_width * in_height, 4);
     out = out_data[mboxprior_enum::kOut].get_with_shape<xpu, 2, DType>(oshape, s);
     CHECK_GE(steps_[0] * steps_[1], 0) << "Must specify both step_y and step_x";
@@ -97,7 +103,7 @@ class MultiBoxPriorOp : public Operator {
       steps_[0] = 1.f / in_height;
       steps_[1] = 1.f / in_width;
     }
-    MultiBoxPriorForward(out, sizes_, ratios_, in_width, in_height, steps_);
+    MultiBoxPriorForward(out, sizes_, ratios_, in_width, in_height, steps_, offsets_);
 
     if (clip_) {
       Assign(out, req[mboxprior_enum::kOut], F<mshadow_op::clip_zero_one>(out));
@@ -123,6 +129,7 @@ class MultiBoxPriorOp : public Operator {
   std::vector<float> sizes_;
   std::vector<float> ratios_;
   std::vector<float> steps_;
+  std::vector<float> offsets_;
 };  // class MultiBoxPriorOp
 
 template<typename xpu>

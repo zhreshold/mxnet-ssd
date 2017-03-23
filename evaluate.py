@@ -51,6 +51,8 @@ def parse_args():
                         help='use difficult ground-truths in evaluation')
     parser.add_argument('--voc07', dest='use_voc07_metric', type=bool, default=True,
                         help='use PASCAL VOC 07 metric')
+    parser.add_argument('--deploy', dest='deploy_net', help='Load network from model',
+                        action='store_true', default=False)
     args = parser.parse_args()
     return args
 
@@ -81,7 +83,8 @@ if __name__ == '__main__':
     #              args.prefix, args.epoch, ctx, year=args.year,
     #              sets=args.eval_set, batch_size=args.batch_size,
     #              nms_thresh=args.nms_thresh, force_nms=args.force_nms)
-    evaluate_net(args.network, args.rec_path, num_class,
+    network = None if args.deploy_net else args.network
+    evaluate_net(network, args.rec_path, num_class,
                  (args.mean_r, args.mean_g, args.mean_b), args.data_shape,
                  args.prefix, args.epoch, ctx, batch_size=args.batch_size,
                  path_imglist=args.list_path, nms_thresh=args.nms_thresh,

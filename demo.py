@@ -76,8 +76,8 @@ def parse_args():
                         help='force non-maximum suppression on different class')
     parser.add_argument('--timer', dest='show_timer', type=bool, default=True,
                         help='show detection time')
-    parser.add_argument('--deploy', dest='deploy_net', help='Load network from model',
-                        action='store_true', default=False)
+    parser.add_argument('--deploy', dest='deploy_net', action='store_true', default=False,
+                        help='Load network from json file, rather than from symbol')
     args = parser.parse_args()
     return args
 
