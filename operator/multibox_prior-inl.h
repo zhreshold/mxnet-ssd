@@ -87,7 +87,7 @@ class MultiBoxPriorOp : public Operator {
     CHECK_EQ(out_data.size(), 1);
     Stream<xpu> *s = ctx.get_stream<xpu>();
     Tensor<xpu, 2, DType> out;
-    // TODO(Joshua Zhang): this implementation is to be compliant to original ssd in caffe
+    // TODO(zhreshold): this implementation is to be compliant to original ssd in caffe
     // The prior boxes could be implemented in more versatile ways
     // since input sizes are same in each batch, we could share MultiBoxPrior
     const int num_sizes = static_cast<int>(sizes_.size());

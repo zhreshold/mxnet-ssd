@@ -15,8 +15,6 @@ def parse_args():
                         default=os.path.join(os.getcwd(), 'data', 'val.rec'), type=str)
     parser.add_argument('--val-list', dest='val_list', help='validation list to use',
                         default="", type=str)
-    parser.add_argument('--devkit-path', dest='devkit_path', help='VOCdevkit path',
-                        default=os.path.join(os.getcwd(), 'data', 'VOCdevkit'), type=str)
     parser.add_argument('--network', dest='network', type=str, default='ssd_300',
                         choices=['vgg16_reduced', 'ssd_300'], help='which network to use')
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=32,
@@ -36,14 +34,14 @@ def parse_args():
     parser.add_argument('--begin-epoch', dest='begin_epoch', help='begin epoch of training',
                         default=0, type=int)
     parser.add_argument('--end-epoch', dest='end_epoch', help='end epoch of training',
-                        default=200, type=int)
+                        default=240, type=int)
     parser.add_argument('--frequent', dest='frequent', help='frequency of logging',
                         default=20, type=int)
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                         help='set image shape')
     parser.add_argument('--label-width', dest='label_width', type=int, default=350,
                         help='force padding label width to sync across train and validation')
-    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.001,
+    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.004,
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
                         help='momentum')
@@ -55,7 +53,7 @@ def parse_args():
                         help='green mean value')
     parser.add_argument('--mean-b', dest='mean_b', type=float, default=104,
                         help='blue mean value')
-    parser.add_argument('--lr-steps', dest='lr_refactor_step', type=str, default='60, 120',
+    parser.add_argument('--lr-steps', dest='lr_refactor_step', type=str, default='150, 200',
                         help='refactor learning rate at specified epochs')
     parser.add_argument('--lr-factor', dest='lr_refactor_ratio', type=str, default=0.1,
                         help='ratio to refactor learning rate')
@@ -85,7 +83,7 @@ def parse_args():
     parser.add_argument('--use-difficult', dest='use_difficult', type=bool, default=False,
                         help='use difficult ground-truths in evaluation')
     parser.add_argument('--voc07', dest='use_voc07_metric', type=bool, default=True,
-                        help='use PASCAL VOC 07 metric')
+                        help='use PASCAL VOC 07 11-point metric')
     args = parser.parse_args()
     return args
 

@@ -13,7 +13,7 @@ This example is intended for reproducing the nice detector while fully utilize t
 remarkable traits of MXNet.
 * The model is fully compatible with caffe version.
 * Model converter from caffe is available, I'll release it once I can convert any symbol other than VGG16.
-* The result is almost identical to the original version. However, due to different non-maximum suppression Implementation, the results might differ slightly.
+* The result is almost identical to the original version. However, due to different implementation details, the results might differ slightly.
 
 ### Demo results
 ![demo1](https://cloud.githubusercontent.com/assets/3307514/19171057/8e1a0cc4-8be0-11e6-9d8f-088c25353b40.png)
@@ -126,3 +126,16 @@ Useful when loading python symbol is not available.
 # cd /path/to/mxnet-ssd
 python deploy.py --num-class 20
 ```
+
+### Convert model from caffe
+Converter from caffe is available at `/path/to/mxnet-ssd/tools/caffe_converter`
+
+This is specifically modified to handle custom layer in caffe-ssd. Usage:
+```
+cd /path/to/mxnet-ssd/tools/caffe_converter
+make
+python convert_model.py deploy.prototxt name_of_pretrained_caffe_model.caffemodel ssd_converted
+# you will use this model in deploy mode without loading from python symbol
+python demo.py --prefix ssd_converted --epoch 1 --deploy
+```
+There is no guarantee that conversion will always work, but at least it's good for now.

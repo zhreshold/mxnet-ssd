@@ -25,14 +25,6 @@ class MultiBoxMetric(mx.metric.EvalMetric):
         prob = prob[mask, indices]
         self.sum_metric[0] += (-np.log(prob + self.eps)).sum()
         self.num_inst[0] += valid_count
-        # p = np.argmax(cls_prob, axis=1).flatten()
-        # self.sum_metric[0] += np.sum(p[mask] == label[mask])
-        # self.num_inst[0] += mask.size
-        # mask = np.where(label > 0)[0]
-        # self.sum_metric[1] += np.sum(p[mask] == label[mask])
-        # self.num_inst[1] += mask.size
-        # cropss entropy / softmax loss
-
         # smoothl1loss
         self.sum_metric[1] += np.sum(loc_loss)
         self.num_inst[1] += valid_count

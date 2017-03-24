@@ -4,29 +4,42 @@ import cv2
 from tools.image_processing import resize, transform
 from tools.rand_sampler import RandSampler
 
-# class DetRecordIter(mx.io.MXDataIter):
-#     def __init__(self, path_imgrec, batch_size, data_shape, path_imglist="",
-#                  label_width=-1, label_pad_width=-1, label_pad_value=-1,
-#                  resize_mode='force',  mean_pixels=[123.68, 116.779, 103.939],
-#                  **kwargs):
-#         handle = mx.io.ImageDetRecordIter(
-#                     path_imgrec     = path_imgrec,
-#                     path_imglist    = path_imglist,
-#                     label_width     = label_width,
-#                     label_pad_width = label_pad_width,
-#                     label_pad_value = label_pad_value,
-#                     batch_size      = batch_size,
-#                     data_shape      = data_shape,
-#                     mean_r          = mean_pixels[0],
-#                     mean_g          = mean_pixels[1],
-#                     mean_b          = mean_pixels[2],
-#                     resize_mode     = resize_mode,
-#                     **kwargs)
-#         super(DetRecordIter, self).__init__(handle, label_name='label')
-
 class DetRecordIter(mx.io.DataIter):
     """
+    The new detection iterator wrapper for mx.io.ImageDetRecordIter which is
+    written in C++, it takes record file as input and runs faster.
+    Supports various augment operations for object detection.
 
+    Parameters:
+    -----------
+    path_imgrec : str
+        path to the record file
+    path_imglist : str
+        path to the list file to replace the labels in record
+    batch_size : int
+        batch size
+    data_shape : tuple
+        (3, height, width)
+    label_width : int
+        specify the label width, use -1 for variable length
+    label_pad_width : int
+        labels must have same shape in batches, use -1 for automatic estimation
+        in each record, otherwise force padding to width in case you want t
+        rain/validation to match the same width
+    label_pad_value : float
+        label padding value
+    resize_mode : str
+        force - resize to data_shape regardless of aspect ratio
+        fit - try fit to data_shape preserving aspect ratio
+        shrink - shrink to data_shape only, preserving aspect ratio
+    mean_pixels : list or tuple
+        mean values for red/green/blue
+    kwargs : dict
+        see mx.io.ImageDetRecordIter
+
+    Returns:
+    ----------
+    
     """
     def __init__(self, path_imgrec, batch_size, data_shape, path_imglist="",
                  label_width=-1, label_pad_width=-1, label_pad_value=-1,

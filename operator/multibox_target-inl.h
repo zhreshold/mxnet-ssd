@@ -96,7 +96,7 @@ class MultiBoxTargetOp : public Operator {
     index_t num_batches = labels.size(0);
     index_t num_anchors = anchors.size(0);
     index_t num_labels = labels.size(1);
-    // TODO(Joshua Zhang): use maximum valid ground-truth in batch rather than # in dataset
+    // TODO(zhreshold): use maximum valid ground-truth in batch rather than # in dataset
     Shape<4> temp_shape = Shape4(11, num_batches, num_anchors, num_labels);
     Tensor<xpu, 4, DType> temp_space = ctx.requested[mboxtarget_enum::kTempSpace]
       .get_space_typed<xpu, 4, DType>(temp_shape, s);
@@ -113,7 +113,7 @@ class MultiBoxTargetOp : public Operator {
     CHECK_EQ(temp_space.CheckContiguous(), true);
 
     // compute overlaps
-    // TODO(Joshua Zhang): squeeze temporary memory space
+    // TODO(zhreshold): squeeze temporary memory space
     // temp_space, 0:out, 1:l1, 2:t1, 3:r1, 4:b1, 5:l2, 6:t2, 7:r2, 8:b2
     // 9: intersection, 10:union
     temp_space[1] = broadcast_keepdim(broadcast_with_axis(slice<1>(anchors, 0, 1), -1,

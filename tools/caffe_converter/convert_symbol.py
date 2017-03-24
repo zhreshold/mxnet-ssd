@@ -306,7 +306,6 @@ def proto2symbol(proto_file):
     sym = "import mxnet as mx\n" \
           + "data = mx.symbol.Variable(name='data')\n" \
           + sym
-    print(sym)
     exec(sym)
     _locals = locals()
     exec("ret = " + output_name, globals(), _locals)
