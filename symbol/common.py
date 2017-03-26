@@ -173,7 +173,7 @@ def multibox_layer(from_layers, num_classes, sizes=[.2, .95],
         else:
             step = '(-1.0, -1.0)'
         anchors = mx.symbol.MultiBoxPrior(from_layer, sizes=size_str, ratios=ratio_str, \
-            clip=clip, name="{}_anchors".format(from_name), steps=steps)
+            clip=clip, name="{}_anchors".format(from_name), steps=step)
         anchors = mx.symbol.Flatten(data=anchors)
         anchor_layers.append(anchors)
 

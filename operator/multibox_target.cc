@@ -198,20 +198,18 @@ inline void MultiBoxTargetForward(const Tensor<cpu, 2, DType> &loc_target,
                 anchor_flags[j] == -1) {
                 // calcuate class predictions
               DType max_val = p_cls_preds[j];
-              DType max_val_pos = max_val;
               for (int k = 1; k < num_classes; ++k) {
                 DType tmp = p_cls_preds[j + num_anchors * k];
-                if (tmp > max_val_pos) max_val_pos = tmp;
+                if (tmp > max_val) max_val = tmp;
               }
               DType sum = 0.f;
               for (int k = 0; k < num_classes; ++k) {
                 DType tmp = p_cls_preds[j + num_anchors * k];
                 sum += std::exp(tmp - max_val);
               }
-              max_val_pos = std::exp(max_val_pos - max_val) / sum;
-              // loss should be -log(x), but value does not matter, so skip log
-              DType loss = -max_val_pos;
-              temp.push_back(SortElemDescend(loss, j));
+              DType prob = std::exp(p_cls_preds[j] - max_val) / sum;
+              // loss should be -log(x), but value does not matter, skip log
+              temp.push_back(SortElemDescend(-prob, j));
             }
           }  // end iterate anchors
 

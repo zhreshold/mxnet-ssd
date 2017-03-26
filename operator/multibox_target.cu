@@ -189,17 +189,16 @@ __global__ void NegativeMining(const DType *overlaps, const DType *cls_preds,
     if (anchor_flags[i] < 0) {
       // compute max class prediction score
       DType max_val = cls_preds[i];
-      DType max_val_pos = max_val;  // regarding background
       for (int j = 1; j < num_classes; ++j) {
         DType temp = cls_preds[i + num_anchors * j];
-        if (temp > max_val_pos) max_val_pos = temp;
+        if (temp > max_val) max_val = temp;
       }
       DType sum = 0.f;
       for (int j = 0; j < num_classes; ++j) {
         DType temp = cls_preds[i + num_anchors * j];
         sum += exp(temp - max_val);
       }
-      max_val_pos = exp(max_val_pos - max_val) / sum;
+      DType prob = exp(cls_preds[i] - max_val) / sum;
       DType max_iou = -1.f;
       for (int j = 0; j < num_labels; ++j) {
         DType temp = overlaps[i * num_labels + j];
@@ -207,7 +206,7 @@ __global__ void NegativeMining(const DType *overlaps, const DType *cls_preds,
       }
       if (max_iou < negative_mining_thresh) {
         // only do it for anchors with iou < thresh
-        buffer[i] = -max_val_pos;  // -log(x) actually, but value does not matter
+        buffer[i] = -prob;  // -log(x) actually, but value does not matter
       }
     }
   }

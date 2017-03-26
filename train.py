@@ -15,8 +15,8 @@ def parse_args():
                         default=os.path.join(os.getcwd(), 'data', 'val.rec'), type=str)
     parser.add_argument('--val-list', dest='val_list', help='validation list to use',
                         default="", type=str)
-    parser.add_argument('--network', dest='network', type=str, default='ssd_300',
-                        choices=['vgg16_reduced', 'ssd_300'], help='which network to use')
+    parser.add_argument('--network', dest='network', type=str, default='vgg16_ssd_300',
+                        choices=['vgg16_ssd_300', 'vgg16_ssd_512'], help='which network to use')
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=32,
                         help='training batch size')
     parser.add_argument('--resume', dest='resume', type=int, default=-1,
