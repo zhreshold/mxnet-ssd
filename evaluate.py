@@ -17,8 +17,8 @@ def parse_args():
                         default=os.path.join(os.getcwd(), 'data', 'val.rec'), type=str)
     parser.add_argument('--list-path', dest='list_path', help='which list file to use',
                         default="", type=str)
-    parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
-                        choices=['vgg16_reduced', 'ssd_300'], help='which network to use')
+    parser.add_argument('--network', dest='network', type=str, default='vgg16_ssd_300',
+                        choices=['vgg16_ssd_300', 'vgg16_ssd_512'], help='which network to use')
     parser.add_argument('--batch-size', dest='batch_size', type=int, default=32,
                         help='evaluation batch size')
     parser.add_argument('--num-class', dest='num_class', type=int, default=20,
@@ -31,7 +31,7 @@ def parse_args():
                         default=os.path.join(os.getcwd(), 'model', 'ssd'), type=str)
     parser.add_argument('--gpus', dest='gpu_id', help='GPU devices to evaluate with',
                         default='0', type=str)
-    parser.add_argument('--cpu', dest='cpu', help='use cpu to evaluate',
+    parser.add_argument('--cpu', dest='cpu', help='use cpu to evaluate, this can be slow',
                         action='store_true')
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                         help='set image shape')
@@ -78,11 +78,6 @@ if __name__ == '__main__':
     else:
         class_names = None
 
-    # evaluate_net(args.network, args.dataset, args.devkit_path,
-    #              (args.mean_r, args.mean_g, args.mean_b), args.data_shape,
-    #              args.prefix, args.epoch, ctx, year=args.year,
-    #              sets=args.eval_set, batch_size=args.batch_size,
-    #              nms_thresh=args.nms_thresh, force_nms=args.force_nms)
     network = None if args.deploy_net else args.network
     evaluate_net(network, args.rec_path, num_class,
                  (args.mean_r, args.mean_g, args.mean_b), args.data_shape,

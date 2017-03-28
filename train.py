@@ -114,7 +114,7 @@ if __name__ == '__main__':
     # start training
     train_net(args.network, args.train_path,
               args.num_class, args.batch_size,
-              args.data_shape, (args.mean_r, args.mean_g, args.mean_b),
+              args.data_shape, [args.mean_r, args.mean_g, args.mean_b],
               args.resume, args.finetune, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,

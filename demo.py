@@ -44,8 +44,8 @@ def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx,
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Single-shot detection network demo')
-    parser.add_argument('--network', dest='network', type=str, default='ssd_300',
-                        choices=['ssd_300'], help='which network to use')
+    parser.add_argument('--network', dest='network', type=str, default='vgg16_ssd_300',
+                        choices=['vgg16_ssd_300', 'vgg16_ssd_512'], help='which network to use')
     parser.add_argument('--images', dest='images', type=str, default='./data/demo/dog.jpg',
                         help='run demo with images, use comma(without space) to seperate multiple images')
     parser.add_argument('--dir', dest='dir', nargs='?',

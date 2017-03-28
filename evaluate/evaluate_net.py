@@ -14,7 +14,42 @@ def evaluate_net(net, path_imgrec, num_classes, mean_pixels, data_shape,
                  ovp_thresh=0.5, use_difficult=False, class_names=None,
                  voc07_metric=False):
     """
+    evalute network given validation record file
 
+    Parameters:
+    ----------
+    net : str or None
+        Network name or use None to load from json without modifying
+    path_imgrec : str
+        path to the record validation file
+    path_imglist : str
+        path to the list file to replace labels in record file, optional
+    num_classes : int
+        number of classes, not including background
+    mean_pixels : tuple
+        (mean_r, mean_g, mean_b)
+    data_shape : tuple or int
+        (3, height, width) or height/width
+    model_prefix : str
+        model prefix of saved checkpoint
+    epoch : int
+        load model epoch
+    ctx : mx.ctx
+        mx.gpu() or mx.cpu()
+    batch_size : int
+        validation batch size
+    nms_thresh : float
+        non-maximum suppression threshold
+    force_nms : boolean
+        whether suppress different class objects
+    ovp_thresh : float
+        AP overlap threshold for true/false postives
+    use_difficult : boolean
+        whether to use difficult objects in evaluation if applicable
+    class_names : comma separated str
+        class names in string, must correspond to num_classes if set
+    voc07_metric : boolean
+        whether to use 11-point evluation as in VOC07 competition
     """
     # set up logger
     logging.basicConfig()
@@ -39,11 +74,13 @@ def evaluate_net(net, path_imgrec, num_classes, mean_pixels, data_shape,
         sys.path.append(os.path.join(cfg.ROOT_DIR, 'symbol'))
         net = importlib.import_module("symbol_" + net) \
             .get_symbol(num_classes, nms_thresh, force_nms)
-    label = mx.sym.Variable(name='label')
-    net = mx.sym.Group([net, label])
+    if not 'label' in net.list_arguments():
+        label = mx.sym.Variable(name='label')
+        net = mx.sym.Group([net, label])
 
     # init module
-    mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx)
+    mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
+        fixed_param_names=net.list_arguments())
     mod.bind(data_shapes=eval_iter.provide_data, label_shapes=eval_iter.provide_label)
     mod.set_params(args, auxs, allow_missing=False, force_init=True)
 

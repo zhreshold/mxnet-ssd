@@ -12,8 +12,15 @@ The arXiv paper is available [here](http://arxiv.org/abs/1512.02325).
 This example is intended for reproducing the nice detector while fully utilize the
 remarkable traits of MXNet.
 * The model is fully compatible with caffe version.
-* Model converter from caffe is available, I'll release it once I can convert any symbol other than VGG16.
+* Model [converter](#convert-caffemodel) from caffe is available now!
 * The result is almost identical to the original version. However, due to different implementation details, the results might differ slightly.
+
+### What's new
+* Update to the latest version according to caffe version, with 5% mAP increase.
+* Use C++ record iterator based on back-end multi-thread engine to achieve huge speed up on multi-gpu environments.
+* Add symbol for 512x512 input.
+* More network symbols under development and test.
+* Extra operators are now in `mxnet/src/operator/contrib`, symbols are modified. Please use [Release-v0.2-beta](https://github.com/zhreshold/mxnet-ssd/releases/tag/v0.2-beta) for old models.
 
 ### Demo results
 ![demo1](https://cloud.githubusercontent.com/assets/3307514/19171057/8e1a0cc4-8be0-11e6-9d8f-088c25353b40.png)
@@ -23,7 +30,8 @@ remarkable traits of MXNet.
 ### mAP
 |        Model          | Training data    | Test data |  mAP |
 |:-----------------:|:----------------:|:---------:|:----:|
-| VGG16_reduced 300x300 | VOC07+12 trainval| VOC07 test| 71.57|
+| VGG16_reduced 300x300 | VOC07+12 trainval| VOC07 test| 77.4|
+| VGG16_reduced 512x512 | VOC07+12 trainval | VOC07 test| 79.9|
 
 ### Speed
 |         Model         |   GPU            | CUDNN | Batch-size | FPS* |
@@ -36,11 +44,11 @@ remarkable traits of MXNet.
 - *Forward time only, data loading and drawing excluded.*
 
 ### Getting started
-* You will need python modules: `easydict`, `cv2`, `matplotlib` and `numpy`.
+* You will need python modules: `cv2`, `matplotlib` and `numpy`.
+If you use mxnet-python api, you probably have already got them.
 You can install them via pip or package manegers, such as `apt-get`:
 ```
 sudo apt-get install python-opencv python-matplotlib python-numpy
-sudo pip install easydict
 ```
 * Clone this repo:
 ```
@@ -54,23 +62,24 @@ git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
 # git submodule update --recursive --init
 cd mxnet-ssd/mxnet
 ```
-* Build MXNet: `cd $REPO_ROOT/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/setup.html).
+* Build MXNet: `cd /path/to/mxnet-ssd/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/setup.html).
 ```
 # for Ubuntu/Debian
 cp make/config.mk ./config.mk
 # modify it if necessary
 ```
 Remember to enable CUDA if you want to be able to train, since CPU training is
-insanely slow. Using CUDNN is optional, it's not fully tested but should be fine.
+insanely slow. Using CUDNN is optional, but highly recommanded.
 
 ### Try the demo
-* Download the pretrained model: [`ssd_300_voc_0712.zip`](https://dl.dropboxusercontent.com/u/39265872/ssd_300_voc0712.zip), and extract to `model/` directory. (This model is converted from VGG_VOC0712_SSD_300x300_iter_60000.caffemodel provided by paper author).
+* Download the pretrained model: [`ssd_300_voc_0712.zip`](https://dl.dropboxusercontent.com/u/39265872/ssd_300_voc0712.zip), and extract to `model/` directory.
 * Run
 ```
 # cd /path/to/mxnet-ssd
 python demo.py
 # play with examples:
 python demo.py --epoch 0 --images ./data/demo/dog.jpg --thresh 0.5
+# wait for library to load for the first time
 ```
 * Check `python demo.py --help` for more options.
 
@@ -99,18 +108,26 @@ in the same `VOCdevkit` folder.
 ln -s /path/to/VOCdevkit /path/to/this_example/data/VOCdevkit
 ```
 Use hard link instead of copy could save us a bit disk space.
+* Create packed binary file for faster training:
+```
+# cd /path/to/mxnet-ssd
+bash tools/prepare_pascal.sh
+# or if you are using windows
+python tools/prepare_dataset.py --dataset pascal --year 2007,2012 --set trainval --target ./data/train.lst
+python $tools/prepare_dataset.py --dataset pascal --year 2007 --set test --target ./data/val.lst --shuffle False
+```
 * Start training:
 ```
 python train.py
 ```
-* By default, this example will use `batch-size=32` and `learning_rate=0.002`.
+* By default, this example will use `batch-size=32` and `learning_rate=0.004`.
 You might need to change the parameters a bit if you have different configurations.
 Check `python train.py --help` for more training options. For example, if you have 4 GPUs, use:
 ```
 # note that a perfect training parameter set is yet to be discovered for multi-gpu
-python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.0005
+python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.001
 ```
-* Memory usage: MXNet is very memory efficient, training on `VGG16_reduced` model with `batch-size` 32 takes around 4684MB without CUDNN.
+* Memory usage: MXNet is very memory efficient, training on `VGG16_reduced` model with `batch-size` 32 takes around 4684MB without CUDNN(conv1_x and conv2_x fixed).
 
 ### Evalute trained model
 Again, currently we only support evaluation on PASCAL VOC
@@ -125,9 +142,11 @@ Useful when loading python symbol is not available.
 ```
 # cd /path/to/mxnet-ssd
 python deploy.py --num-class 20
+# then you can run demo with new model without loading python symbol
+python demo.py --prefix model/ssd_300_deploy --epoch 0 --deploy
 ```
 
-### Convert model from caffe
+### Convert caffemodel
 Converter from caffe is available at `/path/to/mxnet-ssd/tools/caffe_converter`
 
 This is specifically modified to handle custom layer in caffe-ssd. Usage:

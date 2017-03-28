@@ -124,7 +124,7 @@ def main():
             if first_conv and (layer_type == 'Convolution' or layer_type == 4):
                 first_conv = False
 
-    model = mx.mod.Module(symbol=prob, label_names=['prob_label', ])
+    model = mx.mod.Module(symbol=prob, label_names=None)
     model.bind(data_shapes=[('data', tuple(input_dim))])
     model.init_params(arg_params=arg_params, aux_params={})
 
