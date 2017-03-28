@@ -30,7 +30,7 @@ remarkable traits of MXNet.
 ### mAP
 |        Model          | Training data    | Test data |  mAP |
 |:-----------------:|:----------------:|:---------:|:----:|
-| VGG16_reduced 300x300 | VOC07+12 trainval| VOC07 test| 77.4|
+| [VGG16_reduced 300x300](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 77.4|
 | VGG16_reduced 512x512 | VOC07+12 trainval | VOC07 test| 79.9|
 
 ### Speed
