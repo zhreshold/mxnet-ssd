@@ -72,7 +72,7 @@ Remember to enable CUDA if you want to be able to train, since CPU training is
 insanely slow. Using CUDNN is optional, but highly recommanded.
 
 ### Try the demo
-* Download the pretrained model: [`ssd_300_voc_0712.zip`](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.2-beta/ssd_300_voc0712.zip), and extract to `model/` directory.
+* Download the pretrained model: [`ssd_300_voc_0712.zip`](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip), and extract to `model/` directory.
 * Run
 ```
 # cd /path/to/mxnet-ssd
