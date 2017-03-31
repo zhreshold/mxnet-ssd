@@ -2,7 +2,20 @@ import mxnet as mx
 import numpy as np
 
 class MApMetric(mx.metric.EvalMetric):
-    """ Calculate mean AP for object detection task """
+    """
+    Calculate mean AP for object detection task
+
+    Parameters:
+    ---------
+    ovp_thresh : float
+        overlap threshold for TP
+    use_difficult : boolean
+        use difficult ground-truths if applicable, otherwise just ignore
+    class_names : list of str
+        optional, if provided, will print out AP for each class
+    pred_idx : int
+        prediction index in network output list
+    """
     def __init__(self, ovp_thresh=0.5, use_difficult=False, class_names=None, pred_idx=0):
         if class_names is None:
             super(MApMetric, self).__init__("mAP")
@@ -55,7 +68,7 @@ class MApMetric(mx.metric.EvalMetric):
 
         Params:
         ----------
-        labels: mx.nd.array (n * 6) or (n * 5)
+        labels: mx.nd.array (n * 6) or (n * 5), difficult column is optional
             2-d array of ground-truths, n objects(id-xmin-ymin-xmax-ymax-[difficult])
         preds: mx.nd.array (m * 6)
             2-d array of detections, m objects(id-score-xmin-ymin-xmax-ymax)
