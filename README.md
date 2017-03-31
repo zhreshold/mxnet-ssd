@@ -32,6 +32,7 @@ remarkable traits of MXNet.
 |:-----------------:|:----------------:|:---------:|:----:|
 | [VGG16_reduced 300x300](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 77.8|
 | VGG16_reduced 512x512 | VOC07+12 trainval | VOC07 test| 79.9|
+
 *More to be added*
 
 ### Speed
@@ -42,6 +43,7 @@ remarkable traits of MXNet.
 | VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     1      | 64   |
 | VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     8      | 36   |
 | VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     1      | 28   |
+
 *Forward time only, data loading and drawing excluded.*
 
 ### Getting started
