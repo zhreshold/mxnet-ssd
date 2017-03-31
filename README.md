@@ -18,7 +18,7 @@ remarkable traits of MXNet.
 ### What's new
 * Update to the latest version according to caffe version, with 5% mAP increase.
 * Use C++ record iterator based on back-end multi-thread engine to achieve huge speed up on multi-gpu environments.
-* Add symbol for 512x512 input.
+* Monitor validation mAP during training.
 * More network symbols under development and test.
 * Extra operators are now in `mxnet/src/operator/contrib`, symbols are modified. Please use [Release-v0.2-beta](https://github.com/zhreshold/mxnet-ssd/releases/tag/v0.2-beta) for old models.
 
@@ -30,8 +30,9 @@ remarkable traits of MXNet.
 ### mAP
 |        Model          | Training data    | Test data |  mAP |
 |:-----------------:|:----------------:|:---------:|:----:|
-| [VGG16_reduced 300x300](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.7|
+| [VGG16_reduced 300x300](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 77.8|
 | VGG16_reduced 512x512 | VOC07+12 trainval | VOC07 test| 79.9|
+*More to be added*
 
 ### Speed
 |         Model         |   GPU            | CUDNN | Batch-size | FPS* |
@@ -41,7 +42,7 @@ remarkable traits of MXNet.
 | VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     1      | 64   |
 | VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     8      | 36   |
 | VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     1      | 28   |
-- *Forward time only, data loading and drawing excluded.*
+*Forward time only, data loading and drawing excluded.*
 
 ### Getting started
 * You will need python modules: `cv2`, `matplotlib` and `numpy`.
@@ -114,7 +115,7 @@ Use hard link instead of copy could save us a bit disk space.
 bash tools/prepare_pascal.sh
 # or if you are using windows
 python tools/prepare_dataset.py --dataset pascal --year 2007,2012 --set trainval --target ./data/train.lst
-python $tools/prepare_dataset.py --dataset pascal --year 2007 --set test --target ./data/val.lst --shuffle False
+python tools/prepare_dataset.py --dataset pascal --year 2007 --set test --target ./data/val.lst --shuffle False
 ```
 * Start training:
 ```
@@ -130,7 +131,6 @@ python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.001
 * Memory usage: MXNet is very memory efficient, training on `VGG16_reduced` model with `batch-size` 32 takes around 4684MB without CUDNN(conv1_x and conv2_x fixed).
 
 ### Evalute trained model
-Again, currently we only support evaluation on PASCAL VOC
 Use:
 ```
 # cd /path/to/mxnet-ssd
