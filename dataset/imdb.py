@@ -59,8 +59,19 @@ class Imdb(object):
         fname : str
             saved filename
         """
+        def progress_bar(count, total, suffix=''):
+            import sys
+            bar_len = 24
+            filled_len = int(round(bar_len * count / float(total)))
+
+            percents = round(100.0 * count / float(total), 1)
+            bar = '=' * filled_len + '-' * (bar_len - filled_len)
+            sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', suffix))
+            sys.stdout.flush()
+
         str_list = []
         for index in range(self.num_images):
+            progress_bar(index, self.num_images)
             label = self.label_from_index(index)
             if label.size < 1:
                 continue
