@@ -111,7 +111,10 @@ if __name__ == '__main__':
 
     network = None if args.deploy_net else args.network
     class_names = parse_class_names(args.class_names)
-    prefix = args.prefix + args.network + '_' + str(args.data_shape)
+    if args.prefix.endswith('_'):
+        prefix = args.prefix + args.network + '_' + str(args.data_shape)
+    else:
+        prefix = args.prefix
     detector = get_detector(network, prefix, args.epoch,
                             args.data_shape,
                             (args.mean_r, args.mean_g, args.mean_b),

@@ -96,6 +96,7 @@ def get_symbol_train(network, data_shape, **kwargs):
         see symbol_builder.get_symbol_train for more details
     """
     if network.startswith('legacy'):
+        logging.warn('Using legacy model.')
         return symbol_builder.import_module(network).get_symbol_train(**kwargs)
     config = get_config(network, data_shape, **kwargs).copy()
     config.update(kwargs)
@@ -114,6 +115,7 @@ def get_symbol(network, data_shape, **kwargs):
         see symbol_builder.get_symbol for more details
     """
     if network.startswith('legacy'):
+        logging.warn('Using legacy model.')
         return symbol_builder.import_module(network).get_symbol(**kwargs)
     config = get_config(network, data_shape, **kwargs).copy()
     config.update(kwargs)

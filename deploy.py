@@ -30,13 +30,16 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    net = get_symbol(args.network).get_symbol(args.network, args.data_shape,
+    net = get_symbol(args.network, args.data_shape,
         num_classes=args.num_classes, nms_thresh=args.nms_thresh,
         force_suppress=args.force_nms, nms_topk=args.nms_topk)
-    prefix = args.prefix + args.network + '_' + str(args.data_shape)
+    if args.prefix.endswith('_'):
+        prefix = args.prefix + args.network + '_' + str(args.data_shape)
+    else:
+        prefix = args.prefix
     _, arg_params, aux_params = mx.model.load_checkpoint(prefix, args.epoch)
     # new name
-    tmp = args.prefix.rsplit('/', 1)
+    tmp = prefix.rsplit('/', 1)
     save_prefix = '/deploy_'.join(tmp)
     mx.model.save_checkpoint(save_prefix, args.epoch, net, arg_params, aux_params)
     print("Saved model: {}-{:04d}.param".format(save_prefix, args.epoch))

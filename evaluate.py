@@ -76,9 +76,13 @@ if __name__ == '__main__':
         class_names = None
 
     network = None if args.deploy_net else args.network
+    if args.prefix.endswith('_'):
+        prefix = args.prefix + args.network
+    else:
+        prefix = args.prefix
     evaluate_net(network, args.rec_path, num_class,
                  (args.mean_r, args.mean_g, args.mean_b), args.data_shape,
-                 args.prefix + args.network, args.epoch, ctx, batch_size=args.batch_size,
+                 prefix, args.epoch, ctx, batch_size=args.batch_size,
                  path_imglist=args.list_path, nms_thresh=args.nms_thresh,
                  force_nms=args.force_nms, ovp_thresh=args.overlap_thresh,
                  use_difficult=args.use_difficult, class_names=class_names,
