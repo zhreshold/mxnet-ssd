@@ -2,7 +2,6 @@ import argparse
 import tools.find_mxnet
 import mxnet as mx
 import os
-import importlib
 import sys
 from detect.detector import Detector
 from symbol.symbol_factory import get_symbol
@@ -52,7 +51,7 @@ def parse_args():
     parser.add_argument('--epoch', dest='epoch', help='epoch of trained model',
                         default=0, type=int)
     parser.add_argument('--prefix', dest='prefix', help='trained model prefix',
-                        default=os.path.join(os.getcwd(), 'model', 'ssd_vgg16_reduced_300'),
+                        default=os.path.join(os.getcwd(), 'model', 'ssd_'),
                         type=str)
     parser.add_argument('--cpu', dest='cpu', help='(override GPU) use CPU to detect',
                         action='store_true', default=False)
@@ -112,7 +111,8 @@ if __name__ == '__main__':
 
     network = None if args.deploy_net else args.network
     class_names = parse_class_names(args.class_names)
-    detector = get_detector(network, args.prefix, args.epoch,
+    prefix = args.prefix + args.network + '_' + str(args.data_shape)
+    detector = get_detector(network, prefix, args.epoch,
                             args.data_shape,
                             (args.mean_r, args.mean_g, args.mean_b),
                             ctx, len(class_names), args.nms_thresh, args.force_nms)
