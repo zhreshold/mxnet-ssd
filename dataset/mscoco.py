@@ -18,13 +18,14 @@ class Coco(Imdb):
         whether initially shuffle image list
 
     """
-    def __init__(self, anno_file, image_dir, shuffle=True, names='mscoco.txt'):
+    def __init__(self, anno_file, image_dir, shuffle=True, names='mscoco.names'):
         assert os.path.isfile(anno_file), "Invalid annotation file: " + anno_file
         basename = os.path.splitext(os.path.basename(anno_file))[0]
         super(Coco, self).__init__('coco_' + basename)
         self.image_dir = image_dir
 
-        self._load_class_names(names, os.path.join(os.path.dirname(__file__), 'names'))
+        self.classes = self._load_class_names(names,
+            os.path.join(os.path.dirname(__file__), 'names'))
 
         self.num_classes = len(self.classes)
         self._load_all(anno_file, shuffle)
@@ -112,18 +113,3 @@ class Coco(Imdb):
         # store the results
         self.image_set_index = image_set_index
         self.labels = labels
-
-    def _load_class_names(self, filename, dirname):
-        """
-        load class names from text file
-
-        Parameters:
-        ----------
-        filename: str
-            file stores class names
-        dirname: str
-            file directory
-        """
-        full_path = os.path.join(dirname, filename)
-        with open(full_path, 'r') as f:
-            self.classes = [l.strip() for l in f.readlines()]

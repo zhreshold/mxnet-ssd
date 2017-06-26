@@ -16,6 +16,8 @@ remarkable traits of MXNet.
 * The result is almost identical to the original version. However, due to different implementation details, the results might differ slightly.
 
 ### What's new
+* Added multiple trained models.
+* Added a much simpler way to compose network from mainstream classification networks (resnet, inception...) and [Guide](symbol/README.md).
 * Update to the latest version according to caffe version, with 5% mAP increase.
 * Use C++ record iterator based on back-end multi-thread engine to achieve huge speed up on multi-gpu environments.
 * Monitor validation mAP during training.
@@ -103,7 +105,7 @@ tar -xvf VOCtrainval_11-May-2012.tar
 tar -xvf VOCtrainval_06-Nov-2007.tar
 tar -xvf VOCtest_06-Nov-2007.tar
 ```
-* We are goint to use `trainval` set in VOC2007/2012 as a common strategy.
+* We are going to use `trainval` set in VOC2007/2012 as a common strategy.
 The suggested directory structure is to store `VOC2007` and `VOC2012` directories
 in the same `VOCdevkit` folder.
 * Then link `VOCdevkit` folder to `data/VOCdevkit` by default:
@@ -160,3 +162,12 @@ python convert_model.py deploy.prototxt name_of_pretrained_caffe_model.caffemode
 python demo.py --prefix ssd_converted --epoch 1 --deploy
 ```
 There is no guarantee that conversion will always work, but at least it's good for now.
+
+### Legacy models
+Since the new interface for composing network is introduced, the old models have inconsistent names for weights.
+You can still load the previous model by rename the symbol to `legacy_xxx.py`
+and call with `python train/demo.py --network legacy_xxx `
+For example:
+```
+python demo.py --network 'legacy_vgg16_ssd_300.py' --prefix model/ssd_300 --epoch 0
+```

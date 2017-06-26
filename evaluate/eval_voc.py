@@ -51,8 +51,8 @@ def voc_ap(rec, prec, use_07_metric=False):
             ap += p / 11.
     else:
         # append sentinel values at both ends
-        mrec = np.concatenate([0.], rec, [1.])
-        mpre = np.concatenate([0.], prec, [0.])
+        mrec = np.concatenate(([0.], rec, [1.]))
+        mpre = np.concatenate(([0.], prec, [0.]))
 
         # compute precision integration ladder
         for i in range(mpre.size - 1, 0, -1):
@@ -93,10 +93,10 @@ def voc_eval(detpath, annopath, imageset_file, classname, cache_dir, ovthresh=0.
             if ind % 100 == 0:
                 print('reading annotations for {:d}/{:d}'.format(ind + 1, len(image_filenames)))
         print('saving annotations cache to {:s}'.format(cache_file))
-        with open(cache_file, 'w') as f:
+        with open(cache_file, 'wb') as f:
             pickle.dump(recs, f)
     else:
-        with open(cache_file, 'r') as f:
+        with open(cache_file, 'rb') as f:
             recs = pickle.load(f)
 
     # extract objects in :param classname:
