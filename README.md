@@ -30,10 +30,12 @@ remarkable traits of MXNet.
 ![demo3](https://cloud.githubusercontent.com/assets/3307514/19171086/a9346842-8be0-11e6-8011-c17716b22ad3.png)
 
 ### mAP
-|        Model          | Training data    | Test data |  mAP |
-|:-----------------:|:----------------:|:---------:|:----:|
-| [VGG16_reduced 300x300](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 77.8|
-| [VGG16_reduced 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval | VOC07 test| 79.9|
+|        Model          | Training data    | Test data |  mAP | Note |
+|:-----------------:|:----------------:|:---------:|:----:|:-----|
+| [VGG16_reduced 300x300](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 77.8| fast |
+| [VGG16_reduced 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval | VOC07 test| 79.9| slow |
+| [Inception-v3 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/inceptionv3_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fastest |
+| [Resnet-50 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/resnet50_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fast |
 
 *More to be added*
 
@@ -77,13 +79,14 @@ Remember to enable CUDA if you want to be able to train, since CPU training is
 insanely slow. Using CUDNN is optional, but highly recommanded.
 
 ### Try the demo
-* Download the pretrained model: [`ssd_300_voc_0712.zip`](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip), and extract to `model/` directory.
+* Download the pretrained model: [`ssd_resnet50_0712.zip`](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/resnet50_ssd_512_voc0712_trainval.zip), and extract to `model/` directory.
 * Run
 ```
 # cd /path/to/mxnet-ssd
-python demo.py
+python demo.py --gpu 0
 # play with examples:
 python demo.py --epoch 0 --images ./data/demo/dog.jpg --thresh 0.5
+python demo.py --cpu --network resnet50 --data-shape 512
 # wait for library to load for the first time
 ```
 * Check `python demo.py --help` for more options.
