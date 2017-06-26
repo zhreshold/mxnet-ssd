@@ -113,7 +113,7 @@ def get_symbol(network, data_shape, **kwargs):
     kwargs : dict
         see symbol_builder.get_symbol for more details
     """
-    if network.stargswith('legacy'):
+    if network.startswith('legacy'):
         return symbol_builder.import_module(network).get_symbol(**kwargs)
     config = get_config(network, data_shape, **kwargs).copy()
     config.update(kwargs)
