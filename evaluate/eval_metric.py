@@ -194,6 +194,7 @@ class MApMetric(mx.metric.EvalMetric):
 
     def _recall_prec(self, record, count):
         """ get recall and precision from internal records """
+        record = np.delete(record, np.where(record[:, 1].astype(int) == 0)[0], axis=0)
         sorted_records = record[record[:,0].argsort()[::-1]]
         tp = np.cumsum(sorted_records[:, 1].astype(int) == 1)
         fp = np.cumsum(sorted_records[:, 1].astype(int) == 2)
