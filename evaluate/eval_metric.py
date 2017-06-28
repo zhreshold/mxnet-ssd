@@ -124,7 +124,9 @@ class MApMetric(mx.metric.EvalMetric):
                 dets[dets[:,1].argsort()[::-1]]
                 records = np.hstack((dets[:, 1][:, np.newaxis], np.zeros((dets.shape[0], 1))))
                 # ground-truths
-                gts = label[np.where(label[:, 0].astype(int) == cid)[0], :]
+                label_indices = np.where(label[:, 0].astype(int) == cid)[0]
+                gts = label[label_indices, :]
+                label = np.delete(label, label_indices, axis=0)
                 if gts.size > 0:
                     found = [False] * gts.shape[0]
                     for j in range(dets.shape[0]):
@@ -162,6 +164,16 @@ class MApMetric(mx.metric.EvalMetric):
                 records = records[np.where(records[:, -1] > 0)[0], :]
                 if records.size > 0:
                     self._insert(cid, records, gt_count)
+
+            # add missing class if not present in prediction
+            while (label.shape[0] > 0):
+                cid = int(label[0, 0])
+                label_indices = np.where(label[:, 0].astype(int) == cid)[0]
+                label = np.delete(label, label_indices, axis=0)
+                if cid < 0:
+                    continue
+                gt_count = label_indices.size
+                self._insert(cid, np.array([[0, 0]]), gt_count)
 
     def _update(self):
         """ update num_inst and sum_metric """
