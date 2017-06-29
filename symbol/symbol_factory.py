@@ -89,6 +89,7 @@ def get_config(network, data_shape, **kwargs):
             [1,2,.5], [1,2,.5]]
         normalizations = -1
         steps = []
+        return locals()
     else:
         msg = 'No configuration found for %s with data_shape %d' % (network, data_shape)
         raise NotImplementedError(msg)
