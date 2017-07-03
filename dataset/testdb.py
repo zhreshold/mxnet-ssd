@@ -1,5 +1,5 @@
 import os
-from imdb import Imdb
+from .imdb import Imdb
 
 
 class TestDB(Imdb):
