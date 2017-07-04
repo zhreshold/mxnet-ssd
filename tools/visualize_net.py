@@ -1,8 +1,8 @@
-from __future__ import print_function
-import find_mxnet
+from __future__ import print_function, absolute_import
+from . import find_mxnet
 import mxnet as mx
 import argparse
-import symbol_factory
+from symbol import symbol_factory
 
 
 parser = argparse.ArgumentParser(description='network visualization')

@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import os
 import numpy as np
-from imdb import Imdb
+from .imdb import Imdb
 
 
 class YoloFormat(Imdb):

@@ -1,7 +1,7 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import os
 import numpy as np
-from imdb import Imdb
+from .imdb import Imdb
 import xml.etree.ElementTree as ET
 from evaluate.eval_voc import voc_eval
 import cv2
