@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import mxnet as mx
 import numpy as np
 import argparse
@@ -8,7 +9,7 @@ try:
     from caffe.proto import caffe_pb2
 except ImportError:
     caffe_flag = False
-    import caffe_parse.caffe_pb2
+    import .caffe_parse.caffe_pb2
 
 
 def protoBlobFileToND(proto_file):

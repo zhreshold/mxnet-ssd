@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 from google.protobuf import text_format
 import argparse
 import re
@@ -11,7 +11,7 @@ try:
     from caffe.proto import caffe_pb2
 except ImportError:
     caffe_flag = False
-    import caffe_parse.caffe_pb2
+    import .caffe_parse.caffe_pb2
 
 
 def read_proto_solver_file(file_path):

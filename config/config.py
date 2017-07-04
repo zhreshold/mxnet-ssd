@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 from .utils import DotDict, namedtuple_with_defaults, zip_namedtuple, config_as_dict
 
