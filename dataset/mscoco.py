@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 import os
 import numpy as np
-from imdb import Imdb
-from pycocotools.coco import COCO
+from .imdb import Imdb
+from .pycocotools.coco import COCO
 
 
 class Coco(Imdb):

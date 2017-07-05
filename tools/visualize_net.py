@@ -1,10 +1,10 @@
-from __future__ import print_function
-import find_mxnet
+from __future__ import print_function, absolute_import
+import os.path as osp
+from . import find_mxnet
 import mxnet as mx
 import argparse
-import sys, os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'symbol'))
-import symbol_factory
+from symbol import symbol_factory
+
 
 
 parser = argparse.ArgumentParser(description='network visualization')
@@ -21,7 +21,8 @@ if not args.train:
     net = symbol_factory.get_symbol(args.network, args.data_shape, num_classes=args.num_classes)
     a = mx.viz.plot_network(net, shape={"data":(1,3,args.data_shape,args.data_shape)}, \
         node_attrs={"shape":'rect', "fixedsize":'false'})
-    a.render("ssd_" + args.network + '_' + str(args.data_shape))
+    filename = "ssd_" + args.network + '_' + str(args.data_shape)
+    a.render(osp.join(osp.dirname(__file__), filename))
 else:
     net = symbol_factory.get_symbol_train(args.network, args.data_shape, num_classes=args.num_classes)
     print(net.tojson())

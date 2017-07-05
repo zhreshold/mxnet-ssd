@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import mxnet as mx
-from common import legacy_conv_act_layer
-from common import multibox_layer
+from .common import legacy_conv_act_layer
+from .common import multibox_layer
 
 def get_symbol_train(num_classes=20, nms_thresh=0.5, force_suppress=False,
                      nms_topk=400, **kwargs):

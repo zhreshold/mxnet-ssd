@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 import mxnet as mx
-from common import multi_layer_feature, multibox_layer
+from .common import multi_layer_feature, multibox_layer
 
 
 def import_module(module_name):
