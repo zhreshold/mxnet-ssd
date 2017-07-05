@@ -41,7 +41,7 @@ def parse_args():
                         help='set image shape')
     parser.add_argument('--label-width', dest='label_width', type=int, default=350,
                         help='force padding label width to sync across train and validation')
-    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.002,
+    parser.add_argument('--lr', dest='learning_rate', type=float, default=0.004,
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
                         help='momentum')

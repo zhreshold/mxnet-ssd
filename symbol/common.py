@@ -29,8 +29,10 @@ def conv_act_layer(from_layer, name, num_filter, kernel=(1,1), pad=(0,0), \
     ----------
     (conv, relu) mx.Symbols
     """
+    bias = mx.symbol.Variable(name="{}_conv_bias".format(name),   
+        init=mx.init.Constant(0.0), attr={'__lr_mult__': '2.0'})
     conv = mx.symbol.Convolution(data=from_layer, kernel=kernel, pad=pad, \
-        stride=stride, num_filter=num_filter, name="{}_conv".format(name))
+        stride=stride, num_filter=num_filter, name="{}_conv".format(name), bias=bias)
     if use_batchnorm:
         conv = mx.symbol.BatchNorm(data=conv, name="{}_bn".format(name))
     relu = mx.symbol.Activation(data=conv, act_type=act_type, \
