@@ -69,7 +69,7 @@ git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
 # git submodule update --recursive --init
 cd mxnet-ssd/mxnet
 ```
-* Build MXNet: `cd /path/to/mxnet-ssd/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/setup.html).
+* Build MXNet: `cd /path/to/mxnet-ssd/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/install.html).
 ```
 # for Ubuntu/Debian
 cp make/config.mk ./config.mk
