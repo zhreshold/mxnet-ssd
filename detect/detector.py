@@ -62,22 +62,17 @@ class Detector(object):
         if not isinstance(det_iter, mx.io.PrefetchingIter):
             det_iter = mx.io.PrefetchingIter(det_iter)
         start = timer()
-        for nbatch, det_batch in enumerate(det_iter):
-            self.mod.forward(det_batch, is_train=False)
-            pad = det_batch.pad
-            outputs = [out[0:out.shape[0]-pad].copy() for out in self.mod.get_outputs()]
-            detections.append(outputs)
+        for pred, i_batch, batch in self.mod.iter_predict(det_iter):
+            detections.append([output.asnumpy() for output in pred])
         time_elapsed = timer() - start
         if show_timer:
             print("Detection time for {} images: {:.4f} sec".format(
                 num_images, time_elapsed))
         for outputs in detections:
-            for output in outputs:
-                output = output.asnumpy()
-                for i in range(output.shape[0]):
-                    det = output[i, :, :]
-                    res = det[np.where(det[:, 0] >= 0)[0]]
-                    result.append(res)
+            for i in range(outputs[0].shape[0]):
+                det = outputs[0][i, :, :]
+                res = det[np.where(det[:, 0] >= 0)[0]]
+                result.append(res)
         return result
 
     def im_detect(self, im_list, root_dir=None, extension=None, show_timer=False):
