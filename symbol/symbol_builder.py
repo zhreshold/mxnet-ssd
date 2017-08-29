@@ -63,7 +63,7 @@ def get_symbol_train(network, num_classes, from_layers, num_filters, strides, pa
 
     """
     label = mx.sym.Variable('label')
-    body = import_module(network).get_symbol(num_classes, **kwargs)
+    body = import_module(network).get_symbol(num_classes=num_classes, **kwargs)
     layers = multi_layer_feature(body, from_layers, num_filters, strides, pads,
         min_filter=min_filter)
 
