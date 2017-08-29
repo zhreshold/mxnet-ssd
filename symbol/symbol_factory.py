@@ -91,6 +91,23 @@ def get_config(network, data_shape, **kwargs):
         normalizations = -1
         steps = []
         return locals()
+    elif network == 'densenet121':
+        network = 'densenet'
+        data_type = 'imagenet'
+        units = [6, 12, 24, 16]
+        num_stage = 4
+        growth_rate = 32
+        bottle_neck = True
+        from_layers = ['DBstage3_concat24', 'DBstage4_concat16', '', '', '', '']
+        num_filters = [-1, -1, 256, 256, 256, 128]
+        strides = [-1, -1, 2, 2, 2, 2]
+        pads = [-1, -1, 1, 1, 1, 1]
+        sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+        ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
+            [1,2,.5], [1,2,.5]]
+        normalizations = -1
+        steps = []
+        return locals()
     else:
         msg = 'No configuration found for %s with data_shape %d' % (network, data_shape)
         raise NotImplementedError(msg)
