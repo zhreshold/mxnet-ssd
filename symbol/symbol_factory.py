@@ -111,11 +111,11 @@ def get_config(network, data_shape, **kwargs):
     elif network == 'densenet-tiny':
         network = 'densenet'
         data_type = 'imagenet'
-        units = [6, 12, 16, 12]
+        units = [6, 12, 18, 12]
         num_stage = 4
         growth_rate = 16
         bottle_neck = True
-        from_layers = ['DBstage3_concat16', 'DBstage4_concat12', '', '', '', '']
+        from_layers = ['DBstage2_concat12', 'DBstage3_concat18', '', '', '', '']
         num_filters = [-1, -1, 256, 256, 256, 128]
         strides = [-1, -1, 2, 2, 2, 2]
         pads = [-1, -1, 1, 1, 1, 1]
