@@ -42,7 +42,7 @@ def get_config(network, data_shape, **kwargs):
             logging.warn('data_shape %d was not tested, use with caucious.' % data_shape)
         return locals()
     elif network == 'inceptionv3':
-        if data_shape >= 448:
+        if data_shape >= 300:
             from_layers = ['ch_concat_mixed_7_chconcat', 'ch_concat_mixed_10_chconcat', '', '', '', '']
             num_filters = [-1, -1, 512, 256, 256, 128]
             strides = [-1, -1, 2, 2, 2, 2]
