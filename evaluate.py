@@ -1,9 +1,10 @@
 import argparse
-import tools.find_mxnet
-import mxnet as mx
 import os
-import sys
-from evaluate.evaluate_net import evaluate_net
+
+import mxnet as mx
+
+from evaluate import evaluate_net
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Evaluate a network')
