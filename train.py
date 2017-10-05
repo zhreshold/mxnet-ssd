@@ -1,9 +1,9 @@
 import argparse
 import os
-
+import tools.find_mxnet
 import mxnet as mx
-
-from train import train_net
+import sys
+from train.train_net import train_net
 
 
 def parse_args():

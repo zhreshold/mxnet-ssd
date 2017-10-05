@@ -4,12 +4,14 @@
 # defining global parameters
 TRAIN_REC_PATH=./data/train.rec
 VAL_REC_PATH=./data/val.rec
-NETWORK=inceptionv3
+NETWORK=vgg16_reduced
 BATCH_SIZE=32
+DATA_SHAPE=300
 
 python ./scripts/train.py \
     --train-path ${TRAIN_REC_PATH} \
     --val-path= ${VAL_REC_PATH} \
     --network ${NETWORK} \
-    --batch-size ${BATCH_SIZE}
+    --batch-size ${BATCH_SIZE} \
+    --data-shape ${DATA_SHAPE}
 
