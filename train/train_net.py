@@ -80,7 +80,7 @@ def train_net(net, train_path, num_classes, batch_size,
               use_difficult=False, class_names=None,
               voc07_metric=False, nms_topk=400, force_suppress=False,
               train_list="", val_path="", val_list="", iter_monitor=0,
-              monitor_pattern=".*", log_file=None):
+              monitor_pattern=".*", log_file=None, optimizer=None):
     """
     Wrapper for training phase.
 
@@ -116,6 +116,8 @@ def train_net(net, train_path, num_classes, batch_size,
         end epoch of training
     frequent : int
         frequency to print out training status
+    optimizer : str
+        usage of different optimizers, other then default sgd
     learning_rate : float
         training learning rate
     momentum : float
@@ -237,12 +239,18 @@ def train_net(net, train_path, num_classes, batch_size,
     epoch_end_callback = mx.callback.do_checkpoint(prefix)
     learning_rate, lr_scheduler = get_lr_scheduler(learning_rate, lr_refactor_step,
         lr_refactor_ratio, num_example, batch_size, begin_epoch)
-    optimizer_params={'learning_rate':learning_rate,
-                      'momentum':momentum,
-                      'wd':weight_decay,
-                      'lr_scheduler':lr_scheduler,
-                      'clip_gradient':None,
-                      'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0 }
+    # add possibility for different optimizer
+    if optimizer is not None:
+        opt = mx.optimizer.AdaDelta()
+        optimizer_params = {}
+    else:
+        opt = 'sgd'
+        optimizer_params = {'learning_rate': learning_rate,
+                            'momentum': momentum,
+                            'wd': weight_decay,
+                            'lr_scheduler': lr_scheduler,
+                            'clip_gradient': None,
+                            'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
     monitor = mx.mon.Monitor(iter_monitor, pattern=monitor_pattern) if iter_monitor > 0 else None
 
     # run fit net, every n epochs we run evaluation network to get mAP
@@ -257,7 +265,7 @@ def train_net(net, train_path, num_classes, batch_size,
             validation_metric=valid_metric,
             batch_end_callback=batch_end_callback,
             epoch_end_callback=epoch_end_callback,
-            optimizer='sgd',
+            optimizer=opt,
             optimizer_params=optimizer_params,
             begin_epoch=begin_epoch,
             num_epoch=end_epoch,

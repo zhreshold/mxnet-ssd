@@ -2,14 +2,21 @@
 
 # this is a training script
 # defining global parameters
+GPUS='0,1,2,3'
 TRAIN_REC_PATH=./data/train.rec
 VAL_REC_PATH=./data/val.rec
-NETWORK=inceptionv3
-BATCH_SIZE=32
+NETWORK=vgg16_reduced
+BATCH_SIZE=128
+DATA_SHAPE=300
+PRETRAINED=./model/vgg16_reduced/vgg16_reduced
 
-python ./scripts/train.py \
+
+python ./train.py \
     --train-path ${TRAIN_REC_PATH} \
-    --val-path= ${VAL_REC_PATH} \
+    --val-path ${VAL_REC_PATH} \
     --network ${NETWORK} \
-    --batch-size ${BATCH_SIZE}
+    --batch-size ${BATCH_SIZE} \
+    --data-shape ${DATA_SHAPE} \
+    --gpus ${GPUS} \
+    --pretrained ${PRETRAINED}
 

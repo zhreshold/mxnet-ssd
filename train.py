@@ -1,9 +1,9 @@
 import argparse
-import os
-
+import tools.find_mxnet
 import mxnet as mx
-
-from train import train_net
+import os
+import sys
+from train.train_net import train_net
 
 
 def parse_args():
@@ -42,6 +42,8 @@ def parse_args():
                         help='set image shape')
     parser.add_argument('--label-width', dest='label_width', type=int, default=350,
                         help='force padding label width to sync across train and validation')
+    parser.add_argument('--optimizer', dest='optimizer', type=str, default=None,
+                        help='Whether to use a different optimizer or follow the original code with sgd')
     parser.add_argument('--lr', dest='learning_rate', type=float, default=0.004,
                         help='learning rate')
     parser.add_argument('--momentum', dest='momentum', type=float, default=0.9,
@@ -132,4 +134,5 @@ if __name__ == '__main__':
               force_nms=args.force_nms,
               ovp_thresh=args.overlap_thresh,
               use_difficult=args.use_difficult,
-              voc07_metric=args.use_voc07_metric)
+              voc07_metric=args.use_voc07_metric,
+              optimizer=args.optimizer)
