@@ -10,6 +10,7 @@ from train.metric import MultiBoxMetric
 from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
 from symbol.symbol_factory import get_symbol_train
+from evaluate.custom_callbacks import  LogDistributionsCallback
 
 
 def convert_pretrained(name, args):
@@ -276,6 +277,8 @@ def train_net(net, train_path, num_classes, batch_size,
             os.makedirs(os.path.join(tensorboard_dir, 'train'))
             os.makedirs(os.path.join(tensorboard_dir, 'val'))
         batch_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
+            os.path.join(tensorboard_dir, 'train'), 'ssd'))
+        batch_end_callback.append(LogDistributionsCallback(
             os.path.join(tensorboard_dir, 'train'), 'ssd'))
         eval_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
             os.path.join(tensorboard_dir, 'val'), 'ssd'))
