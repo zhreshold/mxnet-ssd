@@ -159,6 +159,8 @@ def train_net(net, train_path, num_classes, batch_size,
     logger.setLevel(logging.INFO)
     if log_file:
         log_file_path = os.path.join(os.path.dirname(prefix), log_file)
+        if not os.path.exists(os.path.dirname(log_file_path)):
+            os.mkdir(os.path.dirname(log_file_path))
         fh = logging.FileHandler(log_file_path)
         logger.addHandler(fh)
 
@@ -239,8 +241,14 @@ def train_net(net, train_path, num_classes, batch_size,
 
     # fit parameters
     if tensorboard:
-        batch_end_callback = [mx.contrib.tensorboard.LogMetricsCallback('logs/train', 'ssd')]
-        eval_end_callback = [mx.contrib.tensorboard.LogMetricsCallback('logs/eval', 'ssd')]
+        tensorboard_dir = os.path.join(os.path.dirname(prefix), 'logs')
+        if not os.path.exists(tensorboard_dir):
+            os.makedirs(os.path.join(tensorboard_dir, 'train'))
+            os.makedirs(os.path.join(tensorboard_dir, 'val'))
+        batch_end_callback = [mx.contrib.tensorboard.LogMetricsCallback(
+            os.path.join(tensorboard_dir, 'train'), 'ssd')]
+        eval_end_callback = [mx.contrib.tensorboard.LogMetricsCallback(
+            os.path.join(tensorboard_dir, 'val'), 'ssd')]
     else:
         batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
         eval_end_callback = None
@@ -248,15 +256,14 @@ def train_net(net, train_path, num_classes, batch_size,
     learning_rate, lr_scheduler = get_lr_scheduler(learning_rate, lr_refactor_step,
         lr_refactor_ratio, num_example, batch_size, begin_epoch)
     # add possibility for different optimizer
-    if optimizer is not None:
-        if optimizer is 'rmsprop':
-            opt = 'rmsprop'
-            print 'you chose RMSProp, decreasing lr by a factor of 10'
-            optimizer_params = {'learning_rate': learning_rate/10.0,
-                                'wd': weight_decay,
-                                'lr_scheduler': lr_scheduler,
-                                'clip_gradient': None,
-                                'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
+    if optimizer.lower() == 'rmsprop':
+        opt = 'rmsprop'
+        logger.info('you chose RMSProp, decreasing lr by a factor of 10')
+        optimizer_params = {'learning_rate': learning_rate/10.0,
+                            'wd': weight_decay,
+                            'lr_scheduler': lr_scheduler,
+                            'clip_gradient': None,
+                            'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
     else:
         opt = 'sgd'
         optimizer_params = {'learning_rate': learning_rate,
