@@ -104,7 +104,8 @@ def train_net(net, train_path, num_classes, batch_size,
               use_difficult=False, class_names=None,
               voc07_metric=False, nms_topk=400, force_suppress=False,
               train_list="", val_path="", val_list="", iter_monitor=0,
-              monitor_pattern=".*", log_file=None, optimizer='sgd', tensorboard=False):
+              monitor_pattern=".*", log_file=None, optimizer='sgd', tensorboard=False,
+              checkpoint_period=5):
     """
     Wrapper for training phase.
 
@@ -176,6 +177,8 @@ def train_net(net, train_path, num_classes, batch_size,
         log to file if enabled
     tensorboard : bool
         record logs into tensorboard
+    checkpoint_period : int
+        a checkpoint will be saved every "checkpoint_period" epochs
     """
     # set up logger
     logging.basicConfig()
@@ -265,7 +268,7 @@ def train_net(net, train_path, num_classes, batch_size,
 
     batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
     eval_end_callback = []
-    epoch_end_callback = mx.callback.do_checkpoint(prefix)
+    epoch_end_callback = mx.callback.do_checkpoint(prefix, period=checkpoint_period)
     # add logging to tensorboard
     if tensorboard:
         tensorboard_dir = os.path.join(os.path.dirname(prefix), 'logs')
