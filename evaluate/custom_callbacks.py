@@ -20,4 +20,4 @@ class LogDistributionsCallback(object):
         for name, value in param.locals['arg_params'].iteritems():
             if self.prefix is not None:
                 name = '%s-%s' % (self.prefix, name)
-            self.summary_writer.add_histogram(name, value)
+            self.summary_writer.add_histogram(name, value.asscalar())
