@@ -29,7 +29,9 @@ def parse_args():
     parser.add_argument('--epoch', dest='epoch', help='epoch of pretrained model',
                         default=1, type=int)
     parser.add_argument('--prefix', dest='prefix', help='new model prefix',
-                        default=os.path.join(os.getcwd(), 'model', 'ssd'), type=str)
+                        default=os.path.join(os.getcwd(), 'output'), type=str)
+    parser.add_argument('--exp_name', dest='experiment_name', help='name for the experiment, where training files will be written',
+                        default='ssd', type=str)
     parser.add_argument('--gpus', dest='gpus', help='GPU devices to train with',
                         default='0', type=str)
     parser.add_argument('--begin-epoch', dest='begin_epoch', help='begin epoch of training',
@@ -79,6 +81,8 @@ def parse_args():
                         help='string of comma separated names, or text filename')
     parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.45,
                         help='non-maximum suppression threshold')
+    parser.add_argument('--nms_topk', dest='nms_topk', type=int, default=400,
+                        help='final number of detections')
     parser.add_argument('--overlap', dest='overlap_thresh', type=float, default=0.5,
                         help='evaluation overlap threshold')
     parser.add_argument('--force', dest='force_nms', type=bool, default=False,
@@ -87,6 +91,8 @@ def parse_args():
                         help='use difficult ground-truths in evaluation')
     parser.add_argument('--voc07', dest='use_voc07_metric', type=bool, default=True,
                         help='use PASCAL VOC 07 11-point metric')
+    parser.add_argument('--tensorboard', dest='tensorboard', type=bool, default=False,
+                        help='save metrics into tensorboard readable files')
     args = parser.parse_args()
     return args
 
@@ -131,8 +137,10 @@ if __name__ == '__main__':
               monitor_pattern=args.monitor_pattern,
               log_file=args.log_file,
               nms_thresh=args.nms_thresh,
+              nms_topk=args.nms_topk,
               force_nms=args.force_nms,
               ovp_thresh=args.overlap_thresh,
               use_difficult=args.use_difficult,
               voc07_metric=args.use_voc07_metric,
-              optimizer=args.optimizer)
+              optimizer=args.optimizer,
+              tensorboard=args.tensorboard)

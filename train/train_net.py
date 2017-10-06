@@ -80,7 +80,7 @@ def train_net(net, train_path, num_classes, batch_size,
               use_difficult=False, class_names=None,
               voc07_metric=False, nms_topk=400, force_suppress=False,
               train_list="", val_path="", val_list="", iter_monitor=0,
-              monitor_pattern=".*", log_file=None, optimizer=None):
+              monitor_pattern=".*", log_file=None, optimizer=None, tensorboard=False):
     """
     Wrapper for training phase.
 
@@ -150,6 +150,8 @@ def train_net(net, train_path, num_classes, batch_size,
         regex pattern for monitoring network stats
     log_file : str
         log to file if enabled
+    tensorboard : bool
+        record logs into tensorboard
     """
     # set up logger
     logging.basicConfig()
@@ -235,14 +237,25 @@ def train_net(net, train_path, num_classes, batch_size,
                         fixed_param_names=fixed_param_names)
 
     # fit parameters
-    batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
+    if tensorboard:
+        batch_end_callback = [mx.contrib.tensorboard.LogMetricsCallback('logs/train', 'ssd')]
+        eval_end_callback = [mx.contrib.tensorboard.LogMetricsCallback('logs/eval', 'ssd')]
+    else:
+        batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
+        eval_end_callback = None
     epoch_end_callback = mx.callback.do_checkpoint(prefix)
     learning_rate, lr_scheduler = get_lr_scheduler(learning_rate, lr_refactor_step,
         lr_refactor_ratio, num_example, batch_size, begin_epoch)
     # add possibility for different optimizer
     if optimizer is not None:
-        opt = mx.optimizer.AdaDelta()
-        optimizer_params = {}
+        if optimizer is 'rmsprop':
+            opt = 'rmsprop'
+            print 'you chose RMSProp, decreasing lr by a factor of 10'
+            optimizer_params = {'learning_rate': learning_rate/10.0,
+                                'wd': weight_decay,
+                                'lr_scheduler': lr_scheduler,
+                                'clip_gradient': None,
+                                'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
     else:
         opt = 'sgd'
         optimizer_params = {'learning_rate': learning_rate,
@@ -264,6 +277,7 @@ def train_net(net, train_path, num_classes, batch_size,
             eval_metric=MultiBoxMetric(),
             validation_metric=valid_metric,
             batch_end_callback=batch_end_callback,
+            eval_end_callback=eval_end_callback,
             epoch_end_callback=epoch_end_callback,
             optimizer=opt,
             optimizer_params=optimizer_params,
