@@ -42,7 +42,7 @@ def parse_args():
                         help='set image shape')
     parser.add_argument('--label-width', dest='label_width', type=int, default=350,
                         help='force padding label width to sync across train and validation')
-    parser.add_argument('--optimizer', dest='optimizer', type=str, default=None,
+    parser.add_argument('--optimizer', dest='optimizer', type=str, default='sgd',
                         help='Whether to use a different optimizer or follow the original code with sgd')
     parser.add_argument('--lr', dest='learning_rate', type=float, default=0.004,
                         help='learning rate')

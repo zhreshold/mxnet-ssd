@@ -11,6 +11,7 @@ from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
 from symbol.symbol_factory import get_symbol_train
 
+
 def convert_pretrained(name, args):
     """
     Special operations need to be made due to name inconsistance, etc
@@ -27,6 +28,28 @@ def convert_pretrained(name, args):
     processed arguments as dict
     """
     return args
+
+
+def get_optimizer_params(optimizer=None, learning_rate=None, momentum=None,
+                         weight_decay=None, lr_scheduler=None, ctx=None, logger=None):
+    if optimizer.lower() == 'rmsprop':
+        opt = 'rmsprop'
+        logger.info('you chose RMSProp, decreasing lr by a factor of 10')
+        optimizer_params = {'learning_rate': learning_rate / 10.0,
+                            'wd': weight_decay,
+                            'lr_scheduler': lr_scheduler,
+                            'clip_gradient': None,
+                            'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
+    elif optimizer.lower() == 'sgd':
+        opt = 'sgd'
+        optimizer_params = {'learning_rate': learning_rate,
+                            'momentum': momentum,
+                            'wd': weight_decay,
+                            'lr_scheduler': lr_scheduler,
+                            'clip_gradient': None,
+                            'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
+    return opt, optimizer_params
+
 
 def get_lr_scheduler(learning_rate, lr_refactor_step, lr_refactor_ratio,
                      num_example, batch_size, begin_epoch):
@@ -70,6 +93,7 @@ def get_lr_scheduler(learning_rate, lr_refactor_step, lr_refactor_ratio,
         lr_scheduler = mx.lr_scheduler.MultiFactorScheduler(step=steps, factor=lr_refactor_ratio)
         return (lr, lr_scheduler)
 
+
 def train_net(net, train_path, num_classes, batch_size,
               data_shape, mean_pixels, resume, finetune, pretrained, epoch,
               prefix, ctx, begin_epoch, end_epoch, frequent, learning_rate,
@@ -80,7 +104,7 @@ def train_net(net, train_path, num_classes, batch_size,
               use_difficult=False, class_names=None,
               voc07_metric=False, nms_topk=400, force_suppress=False,
               train_list="", val_path="", val_list="", iter_monitor=0,
-              monitor_pattern=".*", log_file=None, optimizer=None, tensorboard=False):
+              monitor_pattern=".*", log_file=None, optimizer='sgd', tensorboard=False):
     """
     Wrapper for training phase.
 
@@ -176,17 +200,17 @@ def train_net(net, train_path, num_classes, batch_size,
     assert len(mean_pixels) == 3, "must provide all RGB mean values"
 
     train_iter = DetRecordIter(train_path, batch_size, data_shape, mean_pixels=mean_pixels,
-        label_pad_width=label_pad_width, path_imglist=train_list, **cfg.train)
+                               label_pad_width=label_pad_width, path_imglist=train_list, **cfg.train)
 
     if val_path:
         val_iter = DetRecordIter(val_path, batch_size, data_shape, mean_pixels=mean_pixels,
-            label_pad_width=label_pad_width, path_imglist=val_list, **cfg.valid)
+                                 label_pad_width=label_pad_width, path_imglist=val_list, **cfg.valid)
     else:
         val_iter = None
 
     # load symbol
     net = get_symbol_train(net, data_shape[1], num_classes=num_classes,
-        nms_thresh=nms_thresh, force_suppress=force_suppress, nms_topk=nms_topk)
+                           nms_thresh=nms_thresh, force_suppress=force_suppress, nms_topk=nms_topk)
 
     # define layers with fixed weight/bias
     if freeze_layer_pattern.strip():
@@ -196,37 +220,37 @@ def train_net(net, train_path, num_classes, batch_size,
         fixed_param_names = None
 
     # load pretrained or resume from previous state
-    ctx_str = '('+ ','.join([str(c) for c in ctx]) + ')'
+    ctx_str = '(' + ','.join([str(c) for c in ctx]) + ')'
     if resume > 0:
         logger.info("Resume training with {} from epoch {}"
-            .format(ctx_str, resume))
+                    .format(ctx_str, resume))
         _, args, auxs = mx.model.load_checkpoint(prefix, resume)
         begin_epoch = resume
     elif finetune > 0:
         logger.info("Start finetuning with {} from epoch {}"
-            .format(ctx_str, finetune))
+                    .format(ctx_str, finetune))
         _, args, auxs = mx.model.load_checkpoint(prefix, finetune)
         begin_epoch = finetune
         # check what layers mismatch with the loaded parameters
         exe = net.simple_bind(mx.cpu(), data=(1, 3, 300, 300), label=(1, 1, 5), grad_req='null')
         arg_dict = exe.arg_dict
-	fixed_param_names = []
+        fixed_param_names = []
         for k, v in arg_dict.items():
             if k in args:
                 if v.shape != args[k].shape:
                     del args[k]
                     logging.info("Removed %s" % k)
                 else:
-		    if not 'pred' in k:
-		    	fixed_param_names.append(k)
+                    if not 'pred' in k:
+                        fixed_param_names.append(k)
     elif pretrained:
         logger.info("Start training with {} from pretrained model {}"
-            .format(ctx_str, pretrained))
+                    .format(ctx_str, pretrained))
         _, args, auxs = mx.model.load_checkpoint(pretrained, epoch)
         args = convert_pretrained(pretrained, args)
     else:
         logger.info("Experimental: start training from scratch with {}"
-            .format(ctx_str))
+                    .format(ctx_str))
         args = None
         auxs = None
         fixed_param_names = None
@@ -239,39 +263,25 @@ def train_net(net, train_path, num_classes, batch_size,
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
                         fixed_param_names=fixed_param_names)
 
-    # fit parameters
+    batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
+    eval_end_callback = []
+    epoch_end_callback = mx.callback.do_checkpoint(prefix)
+    # add logging to tensorboard
     if tensorboard:
         tensorboard_dir = os.path.join(os.path.dirname(prefix), 'logs')
         if not os.path.exists(tensorboard_dir):
             os.makedirs(os.path.join(tensorboard_dir, 'train'))
             os.makedirs(os.path.join(tensorboard_dir, 'val'))
-        batch_end_callback = [mx.contrib.tensorboard.LogMetricsCallback(
-            os.path.join(tensorboard_dir, 'train'), 'ssd')]
-        eval_end_callback = [mx.contrib.tensorboard.LogMetricsCallback(
-            os.path.join(tensorboard_dir, 'val'), 'ssd')]
-    else:
-        batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
-        eval_end_callback = None
-    epoch_end_callback = mx.callback.do_checkpoint(prefix)
+        batch_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
+            os.path.join(tensorboard_dir, 'train'), 'ssd'))
+        eval_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
+            os.path.join(tensorboard_dir, 'val'), 'ssd'))
+
     learning_rate, lr_scheduler = get_lr_scheduler(learning_rate, lr_refactor_step,
-        lr_refactor_ratio, num_example, batch_size, begin_epoch)
+                                                   lr_refactor_ratio, num_example, batch_size, begin_epoch)
     # add possibility for different optimizer
-    if optimizer.lower() == 'rmsprop':
-        opt = 'rmsprop'
-        logger.info('you chose RMSProp, decreasing lr by a factor of 10')
-        optimizer_params = {'learning_rate': learning_rate/10.0,
-                            'wd': weight_decay,
-                            'lr_scheduler': lr_scheduler,
-                            'clip_gradient': None,
-                            'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
-    else:
-        opt = 'sgd'
-        optimizer_params = {'learning_rate': learning_rate,
-                            'momentum': momentum,
-                            'wd': weight_decay,
-                            'lr_scheduler': lr_scheduler,
-                            'clip_gradient': None,
-                            'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
+    opt, opt_params = get_optimizer_params(optimizer=optimizer, learning_rate=learning_rate, momentum=momentum,
+                                           weight_decay=weight_decay, lr_scheduler=lr_scheduler, ctx=ctx, logger=logger)
     monitor = mx.mon.Monitor(iter_monitor, pattern=monitor_pattern) if iter_monitor > 0 else None
 
     # run fit net, every n epochs we run evaluation network to get mAP
@@ -288,7 +298,7 @@ def train_net(net, train_path, num_classes, batch_size,
             eval_end_callback=eval_end_callback,
             epoch_end_callback=epoch_end_callback,
             optimizer=opt,
-            optimizer_params=optimizer_params,
+            optimizer_params=opt_params,
             begin_epoch=begin_epoch,
             num_epoch=end_epoch,
             initializer=mx.init.Xavier(),

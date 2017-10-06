@@ -1,4 +1,6 @@
-nvidia-docker run -it --rm \
+#!/usr/bin/env bash
+
+nvidia-docker run -it --rm -p 0.0.0.0:6006:6006 \
 -v /home/oper/Datasets:/mxnet/example/ssd/data \
 -v /home/oper/david/mxnet-ssd/model:/mxnet/example/ssd/model \
 -v /home/oper/david/mxnet-ssd/output:/mxnet/example/ssd/output \
