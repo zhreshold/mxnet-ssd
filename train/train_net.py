@@ -266,9 +266,9 @@ def train_net(net, train_path, num_classes, batch_size,
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
                         fixed_param_names=fixed_param_names)
 
-    batch_end_callback = mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)
+    batch_end_callback = [mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)]
     eval_end_callback = []
-    epoch_end_callback = mx.callback.do_checkpoint(prefix, period=checkpoint_period)
+    epoch_end_callback = [mx.callback.do_checkpoint(prefix, period=checkpoint_period)]
     # add logging to tensorboard
     if tensorboard:
         tensorboard_dir = os.path.join(os.path.dirname(prefix), 'logs')
