@@ -10,6 +10,7 @@ BATCH_SIZE=128
 DATA_SHAPE=300
 PRETRAINED=./model/vgg16_reduced/vgg16_reduced
 OPTIMIZER=rmsprop
+TENSORBOARD=True
 
 
 python ./train.py \
@@ -20,5 +21,5 @@ python ./train.py \
     --data-shape ${DATA_SHAPE} \
     --gpus ${GPUS} \
     --pretrained ${PRETRAINED} \
-    --optimizer ${OPTIMIZER}
-
+    --optimizer ${OPTIMIZER} \
+    --tensorboard ${TENSORBOARD}

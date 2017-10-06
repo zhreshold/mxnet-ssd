@@ -158,7 +158,8 @@ def train_net(net, train_path, num_classes, batch_size,
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     if log_file:
-        fh = logging.FileHandler(log_file)
+        log_file_path = os.path.join(os.path.dirname(prefix), log_file)
+        fh = logging.FileHandler(log_file_path)
         logger.addHandler(fh)
 
     # check args
