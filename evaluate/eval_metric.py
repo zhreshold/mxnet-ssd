@@ -53,11 +53,10 @@ class MApMetric(mx.metric.EvalMetric):
         plt.title(self.class_names[classkey])
         plt.plot(recall, prec, 'b', label='AP = %0.2f' % ap)
         plt.legend(loc='lower right')
-        plt.plot([0, 1], [0, 1], 'r--')
         plt.xlim([0, 1])
         plt.ylim([0, 1])
-        plt.ylabel('Recall')
-        plt.xlabel('Precision')
+        plt.ylabel('Precision')
+        plt.xlabel('Recall')
         plt.savefig(plot_path)
         plt.close(fig)
 
