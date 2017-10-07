@@ -207,6 +207,7 @@ class MApMetric(mx.metric.EvalMetric):
             if self.roc_output_path is not None:
                 self.save_roc_graph(recall=recall, prec=prec, classkey=k, path=self.roc_output_path)
             if self.tensorboard_path is not None:
+                print 'not implemented yet'
                 #save_roc_to_tensorboard(recall=recall, prec=prec, classkey=k, path=self.tensorboard_path)
             aps.append(ap)
             if self.num is not None and k < (self.num - 1):
