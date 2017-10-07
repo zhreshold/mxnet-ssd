@@ -1,9 +1,9 @@
 import argparse
-import os
-
+import tools.find_mxnet
 import mxnet as mx
-
-from evaluate import evaluate_net
+import os
+import sys
+from evaluate.evaluate_net import evaluate_net
 
 
 def parse_args():
