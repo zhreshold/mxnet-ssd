@@ -205,9 +205,9 @@ class MApMetric(mx.metric.EvalMetric):
             recall, prec = self._recall_prec(v, self.counts[k])
             ap = self._average_precision(recall, prec)
             if self.roc_output_path is not None:
-                save_roc_graph(recall=recall, prec=prec, classkey=k, path=self.roc_output_path)
+                self.save_roc_graph(recall=recall, prec=prec, classkey=k, path=self.roc_output_path)
             if self.tensorboard_path is not None:
-                save_roc_to_tensorboard(recall=recall, prec=prec, classkey=k, path=self.tensorboard_path)
+                #save_roc_to_tensorboard(recall=recall, prec=prec, classkey=k, path=self.tensorboard_path)
             aps.append(ap)
             if self.num is not None and k < (self.num - 1):
                 self.sum_metric[k] = ap
