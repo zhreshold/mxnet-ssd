@@ -13,7 +13,7 @@ def evaluate_net(net, path_imgrec, num_classes, mean_pixels, data_shape,
                  model_prefix, epoch, ctx=mx.cpu(), batch_size=1,
                  path_imglist="", nms_thresh=0.45, force_nms=False,
                  ovp_thresh=0.5, use_difficult=False, class_names=None,
-                 voc07_metric=False):
+                 voc07_metric=False, frequent=20):
     """
     evalute network given validation record file
 
@@ -51,6 +51,8 @@ def evaluate_net(net, path_imgrec, num_classes, mean_pixels, data_shape,
         class names in string, must correspond to num_classes if set
     voc07_metric : boolean
         whether to use 11-point evluation as in VOC07 competition
+    frequent : int
+        frequency to print out validation status
     """
     # set up logger
     logging.basicConfig()
@@ -89,6 +91,9 @@ def evaluate_net(net, path_imgrec, num_classes, mean_pixels, data_shape,
         metric = VOC07MApMetric(ovp_thresh, use_difficult, class_names)
     else:
         metric = MApMetric(ovp_thresh, use_difficult, class_names)
-    results = mod.score(eval_iter, metric, num_batch=None)
+    results = mod.score(eval_iter, metric, num_batch=None,
+                        batch_end_callback=mx.callback.Speedometer(batch_size,
+                                                                   frequent=frequent,
+                                                                   auto_reset=False))
     for k, v in results:
         print("{}: {}".format(k, v))
