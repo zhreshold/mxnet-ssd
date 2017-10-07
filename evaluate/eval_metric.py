@@ -46,7 +46,7 @@ class MApMetric(mx.metric.EvalMetric):
         self.tensorboard_path = tensorboard_path
 
     def save_roc_graph(self, recall=None, prec=None, classkey=1, path=None, ap=None):
-        plt.title('roc {0}'.format(str(classkey)))
+        plt.title(self.class_names[classkey])
         plt.plot(recall, prec, 'b', label='AP = %0.2f' % ap)
         plt.legend(loc='lower right')
         plt.plot([0, 1], [0, 1], 'r--')
@@ -54,7 +54,7 @@ class MApMetric(mx.metric.EvalMetric):
         plt.ylim([0, 1])
         plt.ylabel('Recall')
         plt.xlabel('Precision')
-        plt.savefig(os.path.join(path, 'roc'+str(classkey)))
+        plt.savefig(os.path.join(path, 'roc_'+self.class_names[classkey]))
 
     def reset(self):
         """Clear the internal statistics to initial state."""
@@ -205,7 +205,7 @@ class MApMetric(mx.metric.EvalMetric):
             recall, prec = self._recall_prec(v, self.counts[k])
             ap = self._average_precision(recall, prec)
             if self.roc_output_path is not None:
-                self.save_roc_graph(recall=recall, prec=prec, classkey=k, path=self.roc_output_path)
+                self.save_roc_graph(recall=recall, prec=prec, classkey=k, path=self.roc_output_path, ap=ap)
             if self.tensorboard_path is not None:
                 print 'not implemented yet'
                 #save_roc_to_tensorboard(recall=recall, prec=prec, classkey=k, path=self.tensorboard_path)
