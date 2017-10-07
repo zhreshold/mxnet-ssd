@@ -46,6 +46,10 @@ class MApMetric(mx.metric.EvalMetric):
         self.tensorboard_path = tensorboard_path
 
     def save_roc_graph(self, recall=None, prec=None, classkey=1, path=None, ap=None):
+        plot_path = os.path.join(path, 'roc_'+self.class_names[classkey])
+        if os.path.exists(plot_path):
+            os.remove(plot_path)
+        fig = plt.figure()
         plt.title(self.class_names[classkey])
         plt.plot(recall, prec, 'b', label='AP = %0.2f' % ap)
         plt.legend(loc='lower right')
@@ -54,7 +58,8 @@ class MApMetric(mx.metric.EvalMetric):
         plt.ylim([0, 1])
         plt.ylabel('Recall')
         plt.xlabel('Precision')
-        plt.savefig(os.path.join(path, 'roc_'+self.class_names[classkey]))
+        plt.savefig(plot_path)
+        plt.close(fig)
 
     def reset(self):
         """Clear the internal statistics to initial state."""
