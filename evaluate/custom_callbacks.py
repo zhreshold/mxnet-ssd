@@ -24,8 +24,6 @@ class LogROCCallback(object):
 
     def __call__(self, param):
         """Callback to log training speed and metrics in TensorBoard."""
-        if param.locals is None:
-            return
         for class_name in self.class_names:
             roc = os.path.join(self.roc_path, 'roc_'+class_name+'.png')
             if not os.path.exists(roc):
