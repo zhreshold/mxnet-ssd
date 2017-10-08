@@ -29,7 +29,7 @@ class LogROCCallback(object):
             if not os.path.exists(roc):
                 continue
             im = scipy.misc.imread(roc)
-            self.summary_writer.image(self.prefix+'_'+class_name, im)
+            self.summary_writer.add_image(self.prefix+'_'+class_name, im)
 
 class LogDistributionsCallback(object):
     """Log metrics periodically in TensorBoard.

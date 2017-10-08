@@ -46,6 +46,8 @@ class MApMetric(mx.metric.EvalMetric):
         self.tensorboard_path = tensorboard_path
 
     def save_roc_graph(self, recall=None, prec=None, classkey=1, path=None, ap=None):
+        if not os.path.exists(path):
+            os.mkdir(path)
         plot_path = os.path.join(path, 'roc_'+self.class_names[classkey])
         if os.path.exists(plot_path):
             os.remove(plot_path)
