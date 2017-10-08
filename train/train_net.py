@@ -297,9 +297,11 @@ def train_net(net, train_path, num_classes, batch_size,
 
     # run fit net, every n epochs we run evaluation network to get mAP
     if voc07_metric:
-        valid_metric = VOC07MApMetric(ovp_thresh, use_difficult, class_names, pred_idx=3)
+        valid_metric = VOC07MApMetric(ovp_thresh, use_difficult, class_names, pred_idx=3,
+                                      roc_output_path=os.path.join(os.path.dirname(prefix), 'roc'))
     else:
-        valid_metric = MApMetric(ovp_thresh, use_difficult, class_names, pred_idx=3)
+        valid_metric = MApMetric(ovp_thresh, use_difficult, class_names, pred_idx=3,
+                                 roc_output_path=os.path.join(os.path.dirname(prefix), 'roc'))
 
     mod.fit(train_iter,
             val_iter,
