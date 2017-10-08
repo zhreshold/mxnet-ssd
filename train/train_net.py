@@ -278,6 +278,10 @@ def train_net(net, train_path, num_classes, batch_size,
             os.makedirs(os.path.join(tensorboard_dir, 'val'))
         batch_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
             os.path.join(tensorboard_dir, 'train'), 'ssd'))
+        batch_end_callback.append(LogDistributionsCallback(
+            os.path.join(tensorboard_dir, 'train'), 'ssd'))
+        batch_end_callback.append(LogDistributionsCallback(
+            os.path.join(tensorboard_dir, 'train'), 'ssd'))
         eval_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
             os.path.join(tensorboard_dir, 'val'), 'ssd'))
 
@@ -286,6 +290,7 @@ def train_net(net, train_path, num_classes, batch_size,
     # add possibility for different optimizer
     opt, opt_params = get_optimizer_params(optimizer=optimizer, learning_rate=learning_rate, momentum=momentum,
                                            weight_decay=weight_decay, lr_scheduler=lr_scheduler, ctx=ctx, logger=logger)
+    # TODO monitor the gradient flow as in 'https://github.com/dmlc/tensorboard/blob/master/docs/tutorial/understanding-vanish-gradient.ipynb'
     monitor = mx.mon.Monitor(iter_monitor, pattern=monitor_pattern) if iter_monitor > 0 else None
 
     # run fit net, every n epochs we run evaluation network to get mAP

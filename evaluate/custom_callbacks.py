@@ -1,5 +1,4 @@
 import logging
-
 class LogDistributionsCallback(object):
     """Log metrics periodically in TensorBoard.
     This callback works almost same as `callback.Speedometer`, but write TensorBoard event file
@@ -20,4 +19,4 @@ class LogDistributionsCallback(object):
         for name, value in param.locals['arg_params'].iteritems():
             if self.prefix is not None:
                 name = '%s-%s' % (self.prefix, name)
-            self.summary_writer.add_histogram(name, value.asnumpy())
+            self.summary_writer.add_histogram(name, value.asnumpy().flatten())
