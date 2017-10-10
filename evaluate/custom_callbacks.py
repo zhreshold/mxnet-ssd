@@ -1,6 +1,7 @@
 import logging
 import os
 import scipy.misc
+
 class LogROCCallback(object):
     """save roc graphs periodically in TensorBoard.
         write TensorBoard event file, holding the roc graph for every epoch

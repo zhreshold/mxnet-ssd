@@ -275,14 +275,15 @@ def train_net(net, train_path, num_classes, batch_size,
         tensorboard_dir = os.path.join(os.path.dirname(prefix), 'logs')
         if not os.path.exists(tensorboard_dir):
             os.makedirs(os.path.join(tensorboard_dir, 'train'))
-            os.makedirs(os.path.join(tensorboard_dir, 'val'))
+            os.makedirs(os.path.join(tensorboard_dir, 'val', 'roc'))
+            os.makedirs(os.path.join(tensorboard_dir, 'val', 'scalar'))
         batch_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
             os.path.join(tensorboard_dir, 'train'), 'ssd'))
         # epoch_end_callback.append(LogDistributionsCallback(
         #     os.path.join(tensorboard_dir, 'train'), 'ssd'))
         eval_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
-            os.path.join(tensorboard_dir, 'val'), 'ssd'))
-        eval_end_callback.append(LogROCCallback(logging_dir=os.path.join(tensorboard_dir, 'val'),
+            os.path.join(tensorboard_dir, 'val/scalar'), 'ssd'))
+        eval_end_callback.append(LogROCCallback(logging_dir=os.path.join(tensorboard_dir, 'val/roc'),
                                                 roc_path=os.path.join(os.path.dirname(prefix), 'roc'),
                                                 class_names=class_names))
 
