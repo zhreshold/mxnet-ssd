@@ -11,6 +11,7 @@ DATA_SHAPE=300
 PRETRAINED=./model/vgg16_reduced/vgg16_reduced
 OPTIMIZER=rmsprop
 TENSORBOARD=True
+LR_STEPS=30,60,90
 
 
 python ./train.py \
@@ -23,3 +24,4 @@ python ./train.py \
     --pretrained ${PRETRAINED} \
     --optimizer ${OPTIMIZER} \
     --tensorboard ${TENSORBOARD}
+    --lr-steps ${LR_STEPS}
