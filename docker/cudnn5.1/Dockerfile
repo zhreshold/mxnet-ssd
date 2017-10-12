@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
   python-opencv \
   python-matplotlib \
   python-tk \
-  wget
+  wget \
+  graphviz
 
 # Clone MXNet repo and move into it
 RUN cd /root && git clone --recursive https://github.com/zhreshold/mxnet-ssd.git && cd mxnet-ssd/mxnet && \

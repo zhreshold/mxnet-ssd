@@ -36,7 +36,7 @@ def net_visualization(network=None,
 
     a = mx.viz.plot_network(net, shape={"data": (1, 3, data_shape, data_shape)}, \
                             node_attrs={"shape": 'rect', "fixedsize": 'false'})
-    filename = "ssd_" + args.network + '_' + str(data_shape)
+    filename = "ssd_" + network + '_' + str(data_shape)
     a.render(os.path.join(output_dir, filename))
     if print_net:
         print(net.tojson())

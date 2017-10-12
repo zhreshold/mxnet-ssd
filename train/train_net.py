@@ -11,7 +11,7 @@ from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
 from symbol.symbol_factory import get_symbol_train
 from evaluate.custom_callbacks import LogDistributionsCallback, LogROCCallback
-
+from tools.visualize_net import net_visualization
 
 def convert_pretrained(name, args):
     """
@@ -29,12 +29,6 @@ def convert_pretrained(name, args):
     processed arguments as dict
     """
     return args
-
-def net_visualization(net=None, data_shape=None, output_dir=None):
-    a = mx.viz.plot_network(net, shape={"data": (1, 3, data_shape, data_shape)}, \
-                            node_attrs={"shape": 'rect', "fixedsize": 'false'})
-    filename = "ssd_" + args.network + '_' + str(data_shape)
-    a.render(os.path.join(output_dir, filename))
 
 def get_optimizer_params(optimizer=None, learning_rate=None, momentum=None,
                          weight_decay=None, lr_scheduler=None, ctx=None, logger=None):
@@ -100,7 +94,7 @@ def get_lr_scheduler(learning_rate, lr_refactor_step, lr_refactor_ratio,
         return (lr, lr_scheduler)
 
 
-def train_net(net, train_path, num_classes, batch_size,
+def train_net(network, train_path, num_classes, batch_size,
               data_shape, mean_pixels, resume, finetune, pretrained, epoch,
               prefix, ctx, begin_epoch, end_epoch, frequent, learning_rate,
               momentum, weight_decay, lr_refactor_step, lr_refactor_ratio,
@@ -218,7 +212,7 @@ def train_net(net, train_path, num_classes, batch_size,
         val_iter = None
 
     # load symbol
-    net = get_symbol_train(net, data_shape[1], num_classes=num_classes,
+    net = get_symbol_train(network, data_shape[1], num_classes=num_classes,
                            nms_thresh=nms_thresh, force_suppress=force_suppress, nms_topk=nms_topk)
 
     # define layers with fixed weight/bias
@@ -269,7 +263,7 @@ def train_net(net, train_path, num_classes, batch_size,
         logger.info("Freezed parameters: [" + ','.join(fixed_param_names) + ']')
 
     # visualize net
-    net_visualization(net=net, data_shape=data_shape, output_dir=os.path.dirname(prefix))
+    net_visualization(net=net, network=network,data_shape=data_shape[2], output_dir=os.path.dirname(prefix))
 
     # init training module
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,

@@ -1,7 +1,7 @@
 """Presets for various network configurations"""
 from __future__ import absolute_import
 import logging
-from . import symbol_builder
+import symbol_builder
 import numpy as np
 
 def get_scales(min_scale=0.2, max_scale=0.9,num_layers=6):
