@@ -30,7 +30,7 @@ def convert_pretrained(name, args):
     """
     return args
 
-def net_visualization(net=None, data_shape=None, output_dir=None, ):
+def net_visualization(net=None, data_shape=None, output_dir=None):
     a = mx.viz.plot_network(net, shape={"data": (1, 3, data_shape, data_shape)}, \
                             node_attrs={"shape": 'rect', "fixedsize": 'false'})
     filename = "ssd_" + args.network + '_' + str(data_shape)
@@ -269,8 +269,7 @@ def train_net(net, train_path, num_classes, batch_size,
         logger.info("Freezed parameters: [" + ','.join(fixed_param_names) + ']')
 
     # visualize net
-    net_visualization(net=net, num_classes=num_classes,data_shape=data_shape,
-                      output_dir=os.path.dirname(prefix))
+    net_visualization(net=net, data_shape=data_shape, output_dir=os.path.dirname(prefix))
 
     # init training module
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
