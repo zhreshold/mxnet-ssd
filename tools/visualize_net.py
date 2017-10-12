@@ -32,9 +32,9 @@ def net_visualization(network=None,
     # if you specify your net, this means that you are calling this function from somewhere else..
     if net is None:
         if not train:
-            net = symbol_factory.get_symbol(network, args.data_shape, num_classes)
+            net = symbol_factory.get_symbol(network, data_shape, num_classes)
         else:
-            net = symbol_factory.get_symbol_train(args.network, args.data_shape, num_classes=args.num_classes)
+            net = symbol_factory.get_symbol_train(network, data_shape, num_classes=num_classes)
 
     a = mx.viz.plot_network(net, shape={"data": (1, 3, data_shape, data_shape)}, \
                             node_attrs={"shape": 'rect', "fixedsize": 'false'})
