@@ -11,7 +11,6 @@ from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
 from symbol.symbol_factory import get_symbol_train
 from evaluate.custom_callbacks import LogDistributionsCallback, LogROCCallback
-from tools.visualize_net import net_visualization
 
 
 def convert_pretrained(name, args):
@@ -31,6 +30,11 @@ def convert_pretrained(name, args):
     """
     return args
 
+def net_visualization(net=None, data_shape=None, output_dir=None, ):
+    a = mx.viz.plot_network(net, shape={"data": (1, 3, data_shape, data_shape)}, \
+                            node_attrs={"shape": 'rect', "fixedsize": 'false'})
+    filename = "ssd_" + args.network + '_' + str(data_shape)
+    a.render(os.path.join(output_dir, filename))
 
 def get_optimizer_params(optimizer=None, learning_rate=None, momentum=None,
                          weight_decay=None, lr_scheduler=None, ctx=None, logger=None):
