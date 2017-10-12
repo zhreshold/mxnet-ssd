@@ -41,7 +41,7 @@ def net_visualization(network=None,
                                 node_attrs={"shape": 'rect', "fixedsize": 'false'})
         filename = "ssd_" + network + '_' + str(data_shape)+'_'+'test'
     else:
-        a = mx.viz.plot_network(net, shape={"data": None}, \
+        a = mx.viz.plot_network(net, shape=None, \
                                 node_attrs={"shape": 'rect', "fixedsize": 'false'})
         filename = "ssd_" + network + '_' + 'train'
 
