@@ -6,19 +6,21 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'symbol'))
 import symbol_factory
 
-parser = argparse.ArgumentParser(description='network visualization')
-parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
-                    help='the cnn to use')
-parser.add_argument('--num-classes', dest='num_classes', type=int, default=20,
-                    help='the number of classes')
-parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
-                    help='set image\'s shape')
-parser.add_argument('--train', dest='train', type=bool, default=True, help='show train net')
-parser.add_argument('--output-dir', dest='output_dir', type=str, default=os.path.dirname(__file__),
-                    help='path of the output visualized net')
-parser.add_argument('--print-net', dest='print_net', type=bool, default=False,
-                    help='print the network as json')
-args = parser.parse_args()
+def parse_args():
+    parser = argparse.ArgumentParser(description='network visualization')
+    parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
+                        help='the cnn to use')
+    parser.add_argument('--num-classes', dest='num_classes', type=int, default=20,
+                        help='the number of classes')
+    parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
+                        help='set image\'s shape')
+    parser.add_argument('--train', dest='train', type=bool, default=True, help='show train net')
+    parser.add_argument('--output-dir', dest='output_dir', type=str, default=os.path.dirname(__file__),
+                        help='path of the output visualized net')
+    parser.add_argument('--print-net', dest='print_net', type=bool, default=False,
+                        help='print the network as json')
+    args = parser.parse_args()
+    return args
 
 def net_visualization(network=None,
                       num_classes=None,
