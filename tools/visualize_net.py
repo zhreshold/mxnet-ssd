@@ -1,10 +1,10 @@
-from __future__ import print_function, absolute_import
-import os
+from __future__ import print_function
 import find_mxnet
 import mxnet as mx
 import argparse
-from symbol import symbol_factory
-
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'symbol'))
+import symbol_factory
 
 parser = argparse.ArgumentParser(description='network visualization')
 parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
