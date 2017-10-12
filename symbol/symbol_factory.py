@@ -2,6 +2,46 @@
 from __future__ import absolute_import
 import logging
 from . import symbol_builder
+import numpy as np
+
+def get_scales(min_scale=0.2, max_scale=0.9,num_layers=6):
+    """ Following the ssd arxiv paper, regarding the calculation of scales & ratios
+
+    Parameters
+    ----------
+    min_scale : float
+    max_scales: float
+    num_layers: int
+        number of layers that will have a detection head
+    anchor_ratios: list
+    first_layer_ratios: list
+
+    return
+    ------
+    sizes : list
+        list of scale sizes per feature layer
+    ratios : list
+        list of anchor_ratios per feature layer
+    """
+
+    # this code follows the original implementation of wei liu
+    # for more, look at ssd/score_ssd_pascal.py:310 in the original caffe implementation
+    min_ratio = int(min_scale * 100)
+    max_ratio = int(max_scale * 100)
+    step = int(np.floor((max_ratio - min_ratio) / (num_layers - 2)))
+    min_sizes = []
+    max_sizes = []
+    for ratio in xrange(min_ratio, max_ratio + 1, step):
+        min_sizes.append(ratio / 100.)
+        max_sizes.append((ratio + step) / 100.)
+    min_sizes = [min_scale / 2.0] + min_sizes
+    max_sizes = [min_scale] + max_sizes
+
+    # convert it back to this implementation's notation:
+    scales = []
+    for layer_idx in xrange(num_layers):
+        scales.append([min_sizes[layer_idx], np.single(np.sqrt(min_sizes[layer_idx] * max_sizes[layer_idx]))])
+    return scales
 
 def get_config(network, data_shape, **kwargs):
     """Configuration factory for various networks
@@ -21,8 +61,7 @@ def get_config(network, data_shape, **kwargs):
             num_filters = [512, -1, 512, 256, 256, 256, 256]
             strides = [-1, -1, 2, 2, 2, 2, 1]
             pads = [-1, -1, 1, 1, 1, 1, 1]
-            sizes = [[.07, .1025], [.15,.2121], [.3, .3674], [.45, .5196], [.6, .6708], \
-                [.75, .8216], [.9, .9721]]
+            sizes = get_scales(min_scale=0.15, max_scale=0.9, num_layers=len(from_layers))
             ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
                 [1,2,.5,3,1./3], [1,2,.5], [1,2,.5]]
             normalizations = [20, -1, -1, -1, -1, -1, -1]
@@ -33,7 +72,7 @@ def get_config(network, data_shape, **kwargs):
             num_filters = [512, -1, 512, 256, 256, 256]
             strides = [-1, -1, 2, 2, 1, 1]
             pads = [-1, -1, 1, 1, 0, 0]
-            sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+            sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
             ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
                 [1,2,.5], [1,2,.5]]
             normalizations = [20, -1, -1, -1, -1, -1]
@@ -47,7 +86,7 @@ def get_config(network, data_shape, **kwargs):
             num_filters = [-1, -1, 512, 256, 256, 128]
             strides = [-1, -1, 2, 2, 2, 2]
             pads = [-1, -1, 1, 1, 1, 1]
-            sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+            sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
             ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
                 [1,2,.5], [1,2,.5]]
             normalizations = -1
@@ -57,7 +96,7 @@ def get_config(network, data_shape, **kwargs):
             num_filters = [-1, -1, -1, 256, 256, 128]
             strides = [-1, -1, -1, 2, 2, 2]
             pads = [-1, -1, -1, 1, 1, 1]
-            sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+            sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
             ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
                 [1,2,.5], [1,2,.5]]
             normalizations = -1
@@ -71,7 +110,7 @@ def get_config(network, data_shape, **kwargs):
         num_filters = [-1, -1, 512, 256, 256, 128]
         strides = [-1, -1, 2, 2, 2, 2]
         pads = [-1, -1, 1, 1, 1, 1]
-        sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+        sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
         ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
             [1,2,.5], [1,2,.5]]
         normalizations = -1
@@ -85,7 +124,7 @@ def get_config(network, data_shape, **kwargs):
         num_filters = [-1, -1, 512, 256, 256, 128]
         strides = [-1, -1, 2, 2, 2, 2]
         pads = [-1, -1, 1, 1, 1, 1]
-        sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+        sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
         ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
             [1,2,.5], [1,2,.5]]
         normalizations = -1
@@ -96,7 +135,7 @@ def get_config(network, data_shape, **kwargs):
         num_filters = [-1, -1, 512, 256, 256, 128]
         strides = [-1, -1, 2, 2, 2, 2]
         pads = [-1, -1, 1, 1, 1, 1]
-        sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+        sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
         ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
             [1,2,.5], [1,2,.5]]
         normalizations = -1
@@ -113,7 +152,7 @@ def get_config(network, data_shape, **kwargs):
         num_filters = [-1, -1, 256, 256, 256, 128]
         strides = [-1, -1, 2, 2, 2, 2]
         pads = [-1, -1, 1, 1, 1, 1]
-        sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+        sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
         ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
             [1,2,.5], [1,2,.5]]
         normalizations = -1
@@ -130,7 +169,7 @@ def get_config(network, data_shape, **kwargs):
         num_filters = [-1, -1, 256, 256, 256, 128]
         strides = [-1, -1, 2, 2, 2, 2]
         pads = [-1, -1, 1, 1, 1, 1]
-        sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+        sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
         ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
             [1,2,.5], [1,2,.5]]
         normalizations = -1

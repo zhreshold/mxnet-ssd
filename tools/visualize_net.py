@@ -1,28 +1,51 @@
 from __future__ import print_function, absolute_import
-import os.path as osp
-from . import find_mxnet
+import os
+import find_mxnet
 import mxnet as mx
 import argparse
 from symbol import symbol_factory
 
 
-
 parser = argparse.ArgumentParser(description='network visualization')
-parser.add_argument('--network', type=str, default='vgg16_reduced',
-                    help = 'the cnn to use')
-parser.add_argument('--num-classes', type=int, default=20,
+parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
+                    help='the cnn to use')
+parser.add_argument('--num-classes', dest='num_classes', type=int, default=20,
                     help='the number of classes')
-parser.add_argument('--data-shape', type=int, default=300,
+parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                     help='set image\'s shape')
-parser.add_argument('--train', action='store_true', default=False, help='show train net')
+parser.add_argument('--train', dest='train', type=bool, default=True, help='show train net')
+parser.add_argument('--output-dir', dest='output_dir', type=str, default=os.path.dirname(__file__),
+                    help='path of the output visualized net')
+parser.add_argument('--print-net', dest='print_net', type=bool, default=False,
+                    help='print the network as json')
 args = parser.parse_args()
 
-if not args.train:
-    net = symbol_factory.get_symbol(args.network, args.data_shape, num_classes=args.num_classes)
-    a = mx.viz.plot_network(net, shape={"data":(1,3,args.data_shape,args.data_shape)}, \
-        node_attrs={"shape":'rect', "fixedsize":'false'})
-    filename = "ssd_" + args.network + '_' + str(args.data_shape)
-    a.render(osp.join(osp.dirname(__file__), filename))
-else:
-    net = symbol_factory.get_symbol_train(args.network, args.data_shape, num_classes=args.num_classes)
-    print(net.tojson())
+def net_visualization(network=None,
+                      num_classes=None,
+                      data_shape=None,
+                      train=None,
+                      output_dir=None,
+                      print_net=False,
+                      net=None):
+    # if you specify your net, this means that you are calling this function from somewhere else..
+    if net is None:
+        if not train:
+            net = symbol_factory.get_symbol(network, args.data_shape, num_classes)
+        else:
+            net = symbol_factory.get_symbol_train(args.network, args.data_shape, num_classes=args.num_classes)
+
+    a = mx.viz.plot_network(net, shape={"data": (1, 3, data_shape, data_shape)}, \
+                            node_attrs={"shape": 'rect', "fixedsize": 'false'})
+    filename = "ssd_" + args.network + '_' + str(data_shape)
+    a.render(os.path.join(output_dir, filename))
+    if print_net:
+        print(net.tojson())
+
+if __name__ == '__main__':
+    args = parse_args()
+    net_visualization(network=args.network,
+                      num_classes=args.num_classes,
+                      data_shape=args.data_shape,
+                      train=args.train,
+                      output_dir=args.output_dir,
+                      print_net=args.print_net)

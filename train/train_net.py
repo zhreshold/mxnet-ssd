@@ -11,6 +11,7 @@ from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
 from symbol.symbol_factory import get_symbol_train
 from evaluate.custom_callbacks import LogDistributionsCallback, LogROCCallback
+from tools.visualize_net import net_visualization
 
 
 def convert_pretrained(name, args):
@@ -262,6 +263,10 @@ def train_net(net, train_path, num_classes, batch_size,
     # helper information
     if fixed_param_names:
         logger.info("Freezed parameters: [" + ','.join(fixed_param_names) + ']')
+
+    # visualize net
+    net_visualization(net=net, num_classes=num_classes,data_shape=data_shape,
+                      output_dir=os.path.dirname(prefix))
 
     # init training module
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,

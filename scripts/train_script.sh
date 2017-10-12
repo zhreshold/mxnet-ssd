@@ -23,5 +23,6 @@ python ./train.py \
     --gpus ${GPUS} \
     --pretrained ${PRETRAINED} \
     --optimizer ${OPTIMIZER} \
-    --tensorboard ${TENSORBOARD}
-    --lr-steps ${LR_STEPS}
+    --tensorboard ${TENSORBOARD} \
+    --lr-steps ${LR_STEPS} \
+    --freeze ''
