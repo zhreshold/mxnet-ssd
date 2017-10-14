@@ -1,6 +1,55 @@
 import logging
 import os
 import scipy.misc
+import numpy as np
+
+
+class ParseLogCallback(object):
+
+    def __init__(self, dist_logging_dir=None, scalar_logging_dir=None,
+                 logfile_path=None, batch_size=None, iter_monitor=None,
+                 frequent=None, prefix='ssd'):
+        self.scalar_logging_dir = scalar_logging_dir
+        self.dist_logging_dir = dist_logging_dir
+        self.logfile_path = logfile_path
+        self.batch_size = batch_size
+        self.iter_monitor = iter_monitor
+        self.frequent = frequent
+        self.prefix = prefix
+        self.batch = 0
+        self.epoch = 0
+        self.line_idx = 0
+        try:
+            from tensorboard import SummaryWriter
+            self.dist_summary_writer = SummaryWriter(dist_logging_dir)
+            self.scalar_summary_writer = SummaryWriter(scalar_logging_dir)
+        except ImportError:
+            logging.error('You can install tensorboard via `pip install tensorboard`.')
+
+    def __call__(self, param):
+        """Callback to parse a log file and and add params to TensorBoard."""
+        # save distributions from the monitor output log
+        if self.batch % self.iter_monitor == 0:
+            with open(self.logfile_path) as fp:
+                for i in range(self.line_idx):
+                    fp.next()
+                for line in fp:
+                    if line.startswith('Batch'):
+                        line = line.split(' ')
+                        line = [x for x in line if x]
+                        layer_name = line[2]
+                        layer_value = np.array(float(line[3].split('\t')[0])).flatten()
+                        self.dist_summary_writer.add_histogram(layer_name, layer_value)
+                    self.line_idx += 1
+        if self.batch % self.frequent == 0:
+            if param.eval_metric is None:
+                return
+            name_value = param.eval_metric.get_name_value()
+            for name, value in name_value:
+                if self.prefix is not None:
+                    name = '%s-%s' % (self.prefix, name)
+                self.scalar_summary_writer.add_scalar(name, value, global_step=self.batch)
+        self.batch += 1
 
 class LogROCCallback(object):
     """save roc graphs periodically in TensorBoard.

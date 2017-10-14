@@ -1,5 +1,4 @@
 """Presets for various network configurations"""
-from __future__ import absolute_import
 import logging
 import symbol_builder
 import numpy as np

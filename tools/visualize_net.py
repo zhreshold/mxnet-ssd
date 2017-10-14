@@ -14,7 +14,7 @@ def parse_args():
                         help='the number of classes')
     parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
                         help='set image\'s shape')
-    parser.add_argument('--train', dest='train', type=bool, default=True, help='show train net')
+    parser.add_argument('--train', dest='train', type=bool, default=False, help='show train net')
     parser.add_argument('--output-dir', dest='output_dir', type=str, default=os.path.dirname(__file__),
                         help='path of the output visualized net')
     parser.add_argument('--print-net', dest='print_net', type=bool, default=False,

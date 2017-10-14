@@ -10,7 +10,7 @@ from train.metric import MultiBoxMetric
 from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
 from symbol.symbol_factory import get_symbol_train
-from evaluate.custom_callbacks import LogDistributionsCallback, LogROCCallback
+from evaluate.custom_callbacks import LogDistributionsCallback, LogROCCallback, ParseLogCallback
 from tools.visualize_net import net_visualization
 
 def convert_pretrained(name, args):
@@ -263,32 +263,41 @@ def train_net(network, train_path, num_classes, batch_size,
         logger.info("Freezed parameters: [" + ','.join(fixed_param_names) + ']')
 
     # visualize net
-    net_visualization(net=net, network=network,data_shape=data_shape[2], output_dir=os.path.dirname(prefix))
+    net_visualization(net=net, network=network,data_shape=data_shape[2],
+                      output_dir=os.path.dirname(prefix), train=True)
 
     # init training module
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
                         fixed_param_names=fixed_param_names)
 
-    batch_end_callback = [mx.callback.Speedometer(train_iter.batch_size, frequent=frequent)]
+    batch_end_callback = []
     eval_end_callback = []
     epoch_end_callback = [mx.callback.do_checkpoint(prefix, period=checkpoint_period)]
     # add logging to tensorboard
     if tensorboard:
         tensorboard_dir = os.path.join(os.path.dirname(prefix), 'logs')
         if not os.path.exists(tensorboard_dir):
-            os.makedirs(os.path.join(tensorboard_dir, 'train'))
+            os.makedirs(os.path.join(tensorboard_dir, 'train', 'scalar'))
+            os.makedirs(os.path.join(tensorboard_dir, 'train', 'dist'))
             os.makedirs(os.path.join(tensorboard_dir, 'val', 'roc'))
             os.makedirs(os.path.join(tensorboard_dir, 'val', 'scalar'))
-        batch_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
-            os.path.join(tensorboard_dir, 'train'), 'ssd'))
+        # batch_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
+        #     os.path.join(tensorboard_dir, 'train', 'scalar'), 'ssd'))
         # epoch_end_callback.append(LogDistributionsCallback(
         #     os.path.join(tensorboard_dir, 'train'), 'ssd'))
+        batch_end_callback.append(
+            ParseLogCallback(dist_logging_dir=os.path.join(tensorboard_dir, 'train', 'dist'),
+                             scalar_logging_dir=os.path.join(tensorboard_dir, 'train', 'scalar'),
+                             logfile_path=log_file_path, batch_size=batch_size, iter_monitor=iter_monitor,
+                             frequent=frequent))
         eval_end_callback.append(mx.contrib.tensorboard.LogMetricsCallback(
             os.path.join(tensorboard_dir, 'val/scalar'), 'ssd'))
         eval_end_callback.append(LogROCCallback(logging_dir=os.path.join(tensorboard_dir, 'val/roc'),
                                                 roc_path=os.path.join(os.path.dirname(prefix), 'roc'),
                                                 class_names=class_names))
-
+    # this callback should be the last in a serie of batch_callbacks
+    # since it is resetting the metric evaluation every $frequent batches
+    batch_end_callback.append(mx.callback.Speedometer(train_iter.batch_size, frequent=frequent))
 
     learning_rate, lr_scheduler = get_lr_scheduler(learning_rate, lr_refactor_step,
                                                    lr_refactor_ratio, num_example, batch_size, begin_epoch)
