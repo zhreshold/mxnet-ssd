@@ -288,3 +288,106 @@ class DetIter(mx.io.DataIter):
         data = data.astype('float32')
         data = data - self._mean_pixels
         return data, label
+
+class DetTestImageIter(mx.io.DataIter):
+    """
+    Detection Iterator, which will feed data and label to network
+    Optional data augmentation is performed when providing batch
+
+    Parameters:
+    ----------
+    imdb : Imdb
+        image database
+    batch_size : int
+        batch size
+    data_shape : int or (int, int)
+        image shape to be resized
+    mean_pixels : float or float list
+        [R, G, B], mean pixel values
+    """
+    def __init__(self, test_images, batch_size, data_shape, \
+                 mean_pixels=[128, 128, 128]):
+        super(DetTestImageIter, self).__init__()
+
+        self.test_images = test_images
+        self.batch_size = batch_size
+        if isinstance(data_shape, int):
+            data_shape = (data_shape, data_shape)
+        self._data_shape = data_shape
+        self._mean_pixels = mx.nd.array(mean_pixels).reshape((3,1,1))
+        
+        self._current = 0
+        self._size = len(test_images)
+        self._index = np.arange(self._size)
+
+        self._data = None
+        self._label = None
+        self._get_batch()
+        self.resized_data = None
+
+    @property
+    def provide_data(self):
+        return [(k, v.shape) for k, v in self._data.items()]
+
+    @property
+    def provide_label(self):
+        return []
+
+    def reset(self):
+        self._current = 0
+        
+    def iter_next(self):
+        return self._current < self._size
+
+    def next(self):
+        if self.iter_next():
+            self._get_batch()
+            data_batch = mx.io.DataBatch(data=list(self._data.values()),
+                                   label=list(self._label.values()),
+                                   pad=self.getpad(), index=self.getindex())
+            self._current += self.batch_size
+            return data_batch
+        else:
+            raise StopIteration
+
+    def getindex(self):
+        return self._current // self.batch_size
+
+    def getpad(self):
+        pad = self._current + self.batch_size - self._size
+        return 0 if pad < 0 else pad
+
+    def _get_batch(self):
+        """
+        Load data/label from dataset
+        """
+        batch_data = mx.nd.zeros((self.batch_size, 3, self._data_shape[0], self._data_shape[1]))
+        for i in range(self.batch_size):
+            if (self._current + i) >= self._size:
+                     continue
+            else:
+                index = self._index[self._current + i]
+            img_content = self.test_images[index]
+            #img = mx.img.imdecode(img_content)
+            img = mx.nd.array(img_content)
+            data = self._data_augmentation(img)
+            batch_data[i] = data
+
+        self._data = {'data': batch_data}
+        self._label = {'label': None}
+
+    def _data_augmentation(self, data):
+        """
+        perform data augmentations: crop, mirror, resize, sub mean, swap channels...
+        """
+        interp_methods = [cv2.INTER_LINEAR]
+        interp_method = interp_methods[int(np.random.uniform(0, 1) * len(interp_methods))]
+        data = mx.img.imresize(data, self._data_shape[1], self._data_shape[0], interp_method)
+        self.resized_data = data
+        data = mx.nd.transpose(data, (2,0,1))
+        data = data.astype('float32')
+        data = data - self._mean_pixels
+        return data
+
+    def current_data(self):
+        return self.resized_data
