@@ -48,6 +48,15 @@ def get_optimizer_params(optimizer=None, learning_rate=None, momentum=None,
                             'lr_scheduler': lr_scheduler,
                             'clip_gradient': None,
                             'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
+    elif optimizer.lower() == 'adadelta':
+        opt = 'adadelta'
+        optimizer_params = {}
+    elif optimizer.lower() == 'adam':
+        opt = 'adam'
+        optimizer_params = {'learning_rate': learning_rate,
+                            'lr_scheduler': lr_scheduler,
+                            'clip_gradient': None,
+                            'rescale_grad': 1.0 / len(ctx) if len(ctx) > 0 else 1.0}
     return opt, optimizer_params
 
 
