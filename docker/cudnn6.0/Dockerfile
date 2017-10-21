@@ -13,7 +13,9 @@ RUN apt-get update && apt-get install -y \
   python-setuptools \
   python-opencv \
   python-matplotlib \
-  wget
+  python-tk \
+  wget \
+  graphviz
 
 # Clone MXNet repo and move into it
 RUN cd /root && git clone --recursive https://github.com/zhreshold/mxnet-ssd.git && cd mxnet-ssd/mxnet && \
@@ -39,7 +41,11 @@ RUN echo "export PYTHONPATH=$/root/mxnet-ssd/mxnet/python:$PYTHONPATH" >> /root/
 RUN easy_install -U pip
 
 # Install graphviz and jupyter
-RUN pip install graphviz jupyter ipython matplotlib tensorboard
+RUN pip install graphviz jupyter ipython matplotlib tensorboard future scipy
 
 # Set ~/mxnet as working directory
 WORKDIR /root/mxnet-ssd
+
+# TODO add tensorboard code change to the docker...
+# the installation was /usr/local/lib/python2.7/dist-packages/tensorboard/summary:186
+

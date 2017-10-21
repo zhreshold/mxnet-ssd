@@ -2,17 +2,17 @@
 
 nvidia-docker run -it --rm \
 -e MXNET_CUDNN_AUTOTUNE_DEFAULT=0 \
--v /home/oper/Datasets:/mxnet/example/ssd/data \
--v /home/oper/david/mxnet-ssd/model:/mxnet/example/ssd/model \
--v /home/oper/david/mxnet-ssd/output:/mxnet/example/ssd/output \
--v /home/oper/david/mxnet-ssd/train:/mxnet/example/ssd/train \
--v /home/oper/david/mxnet-ssd/tools:/mxnet/example/ssd/tools \
--v /home/oper/david/mxnet-ssd/symbol:/mxnet/example/ssd/symbol \
--v /home/oper/david/mxnet-ssd/detect:/mxnet/example/ssd/detect \
--v /home/oper/david/mxnet-ssd/evaluate:/mxnet/example/ssd/evaluate \
--v /home/oper/david/mxnet-ssd/scripts:/mxnet/example/ssd/scripts \
--v /home/oper/david/mxnet-ssd/deploy.py:/mxnet/example/ssd/deploy.py \
--v /home/oper/david/mxnet-ssd/evaluate.py:/mxnet/example/ssd/evaluate.py \
--v /home/oper/david/mxnet-ssd/train.py:/mxnet/example/ssd/train.py \
--v /home/oper/david/mxnet-ssd/demo.py:/mxnet/example/ssd/demo.py \
-mxnet/ssd:david
+-v /home/oper/Datasets:/root/mxnet-ssd/data \
+-v /home/oper/david/mxnet-ssd/model:/root/mxnet-ssd/model \
+-v /home/oper/david/mxnet-ssd/output:/root/mxnet-ssd/output \
+-v /home/oper/david/mxnet-ssd/train:/root/mxnet-ssd/train \
+-v /home/oper/david/mxnet-ssd/tools:/root/mxnet-ssd/tools \
+-v /home/oper/david/mxnet-ssd/symbol:/root/mxnet-ssd/symbol \
+-v /home/oper/david/mxnet-ssd/detect:/root/mxnet-ssd/detect \
+-v /home/oper/david/mxnet-ssd/evaluate:/root/mxnet-ssd/evaluate \
+-v /home/oper/david/mxnet-ssd/scripts:/root/mxnet-ssd/scripts \
+-v /home/oper/david/mxnet-ssd/deploy.py:/root/mxnet-ssd/deploy.py \
+-v /home/oper/david/mxnet-ssd/evaluate.py:/root/mxnet-ssd/evaluate.py \
+-v /home/oper/david/mxnet-ssd/train.py:/root/mxnet-ssd/train.py \
+-v /home/oper/david/mxnet-ssd/demo.py:/root/mxnet-ssd/demo.py \
+mxnet/ssd:cuda8.0_cudnn5.1

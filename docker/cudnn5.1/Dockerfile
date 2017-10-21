@@ -41,7 +41,7 @@ RUN echo "export PYTHONPATH=$/root/mxnet-ssd/mxnet/python:$PYTHONPATH" >> /root/
 RUN easy_install -U pip
 
 # Install graphviz and jupyter
-RUN pip install graphviz jupyter ipython matplotlib tensorboard future
+RUN pip install graphviz jupyter ipython matplotlib tensorboard future scipy
 
 # Set ~/mxnet as working directory
 WORKDIR /root/mxnet-ssd
