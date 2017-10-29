@@ -81,13 +81,14 @@ def get_config(network, data_shape, **kwargs):
         steps = []
         return locals()
     elif network == 'mobilenet':
-        from_layers = ['activation22', 'activation26', '', '', '', '']
-        num_filters = [-1, -1, 512, 256, 256, 128]
-        strides = [-1, -1, 2, 2, 2, 2]
-        pads = [-1, -1, 1, 1, 1, 1]
-        sizes = [[.1, .141], [.2,.272], [.37, .447], [.54, .619], [.71, .79], [.88, .961]]
+        from_layers = ['conv_12_relu', 'conv_14_relu', '', '', '', '', '']
+        num_filters = [-1, -1, 512, 256, 256, 256, 256]
+        strides = [-1, -1, 2, 2, 2, 2, 2]
+        pads = [-1, -1, 1, 1, 1, 1, 1]
+        sizes = [[.07, .1025], [.15,.2121], [.3, .3674], [.45, .5196], [.6, .6708], \
+            [.75, .8216], [.9, .9721]]
         ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
-            [1,2,.5], [1,2,.5]]
+            [1,2,.5,3,1./3], [1,2,.5], [1,2,.5]]
         normalizations = -1
         steps = []
         return locals()
