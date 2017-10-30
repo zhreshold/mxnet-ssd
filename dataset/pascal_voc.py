@@ -24,8 +24,8 @@ class PascalVoc(Imdb):
     is_train : boolean
         if true, will load annotations
     """
-    def __init__(self, image_set, year, devkit_path, shuffle=False, is_train=False,
-            names='pascal_voc.names'):
+    def __init__(self, image_set, year, devkit_path, shuffle=False, is_train=False, class_names=None,
+            names='pascal_voc.names', true_negative_images=False):
         super(PascalVoc, self).__init__('voc_' + year + '_' + image_set)
         self.image_set = image_set
         self.year = year
@@ -33,9 +33,13 @@ class PascalVoc(Imdb):
         self.data_path = os.path.join(devkit_path, 'VOC' + year)
         self.extension = '.jpg'
         self.is_train = is_train
+        self.true_negative_images = true_negative_images
 
-        self.classes = self._load_class_names(names,
-            os.path.join(os.path.dirname(__file__), 'names'))
+        if class_names is not None:
+            self.classes = class_names.replace(' ', '').split(',')
+        else:
+            self.classes = self._load_class_names(names,
+                os.path.join(os.path.dirname(__file__), 'names'))
 
         self.config = {'use_difficult': True,
                        'comp_id': 'comp4',}
@@ -45,6 +49,9 @@ class PascalVoc(Imdb):
         self.num_images = len(self.image_set_index)
         if self.is_train:
             self.labels = self._load_image_labels()
+        # filter images with no ground-truth, like in case you use only a subset of classes
+        if not self.true_negative_images:
+            self._filter_image_with_no_gt()
 
     @property
     def cache_path(self):
@@ -59,6 +66,27 @@ class PascalVoc(Imdb):
         if not os.path.exists(cache_path):
             os.mkdir(cache_path)
         return cache_path
+
+    def _filter_image_with_no_gt(self):
+        """
+        filter images that have no ground-truth labels.
+        use case: when you wish to work only on a subset of pascal classes, you have 2 options:
+            1. use only the sub-dataset that contains the subset of classes
+            2. use all images, and images with no ground-truth will count as true-negative images
+        :return:
+        self object with filtered information
+        """
+
+        # find indices of images with ground-truth labels
+        gt_indices = [idx for idx, f in enumerate(self.labels) if not f.size == 0]
+
+        self.labels = [self.labels[idx] for idx in gt_indices]
+        self.image_set_index = [self.image_set_index[idx] for idx in gt_indices]
+        old_num_images = self.num_images
+        self.num_images = len(self.labels)
+
+        print ('filtering images with no gt-labels. can abort filtering using *true_negative* flag')
+        print ('... remaining {0}/{1} images.  '.format(self.num_images, old_num_images))
 
     def _load_image_set_index(self, shuffle):
         """

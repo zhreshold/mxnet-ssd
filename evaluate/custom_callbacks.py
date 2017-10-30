@@ -39,7 +39,8 @@ class ParseLogCallback(object):
                         line = [x for x in line if x]
                         layer_name = line[2]
                         layer_value = np.array(float(line[3].split('\t')[0])).flatten()
-                        self.dist_summary_writer.add_histogram(layer_name, layer_value)
+                        if np.isfinite(layer_value):
+                            self.dist_summary_writer.add_histogram(layer_name, layer_value)
                     self.line_idx += 1
         if self.batch % self.frequent == 0:
             if param.eval_metric is None:

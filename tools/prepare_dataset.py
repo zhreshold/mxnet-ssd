@@ -8,7 +8,7 @@ from dataset.pascal_voc import PascalVoc
 from dataset.mscoco import Coco
 from dataset.concat_db import ConcatDB
 
-def load_pascal(image_set, year, devkit_path, shuffle=False):
+def load_pascal(image_set, year, devkit_path, shuffle=False, class_names=None):
     """
     wrapper function for loading pascal voc dataset
 
@@ -41,7 +41,7 @@ def load_pascal(image_set, year, devkit_path, shuffle=False):
 
     imdbs = []
     for s, y in zip(image_set, year):
-        imdbs.append(PascalVoc(s, y, devkit_path, shuffle, is_train=True))
+        imdbs.append(PascalVoc(s, y, devkit_path, shuffle, is_train=True, class_names=class_names))
     if len(imdbs) > 1:
         return ConcatDB(imdbs, shuffle)
     else:
@@ -80,8 +80,10 @@ def parse_args():
     parser.add_argument('--set', dest='set', help='train, val, trainval, test',
                         default='trainval', type=str)
     parser.add_argument('--target', dest='target', help='output list file',
-                        default=os.path.join(curr_path, '..', 'train.lst'),
+                        default=None,
                         type=str)
+    parser.add_argument('--class-names', dest='class_names', type=str,
+                        default=None, help='string of comma separated names, or text filename')
     parser.add_argument('--root', dest='root_path', help='dataset root path',
                         default=os.path.join(curr_path, '..', 'data', 'VOCdevkit'),
                         type=str)
@@ -92,8 +94,12 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    if args.class_names is None:
+        args.target = os.path.join(curr_path, '..', 'train.lst')
+    else:
+        assert args.target is not None, 'for a subset of classes, specify a target path. Its for your own safety'
     if args.dataset == 'pascal':
-        db = load_pascal(args.set, args.year, args.root_path, args.shuffle)
+        db = load_pascal(args.set, args.year, args.root_path, args.shuffle, args.class_names)
         print("saving list to disk...")
         db.save_imglist(args.target, root=args.root_path)
     elif args.dataset == 'coco':
