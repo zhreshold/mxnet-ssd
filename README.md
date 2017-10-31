@@ -36,6 +36,9 @@ remarkable traits of MXNet.
 | [VGG16_reduced 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval | VOC07 test| 79.9| slow |
 | [Inception-v3 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/inceptionv3_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fastest |
 | [Resnet-50 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/resnet50_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fast |
+| [MobileNet 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.7-alpha/mobilenet-ssd-512.zip) | VOC07+12 trainval| VOC07 test| 72.5 | super fast |
+| [MobileNet 608x608](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.7-alpha/mobilenet-ssd-608.zip) | VOC07+12 trainval| VOC07 test| 74.7 | super fast |
+
 
 *More to be added*
 
