@@ -16,6 +16,8 @@ remarkable traits of MXNet.
 * The result is almost identical to the original version. However, due to different implementation details, the results might differ slightly.
 
 ### What's new
+* Now this repo is internally synchronized up to data with offical mxnet backend. `pip install mxnet` will work for this repo as well in most cases.
+* MobileNet pretrained model now provided.
 * Added multiple trained models.
 * Added a much simpler way to compose network from mainstream classification networks (resnet, inception...) and [Guide](symbol/README.md).
 * Update to the latest version according to caffe version, with 5% mAP increase.
@@ -72,7 +74,7 @@ git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
 # git submodule update --recursive --init
 cd mxnet-ssd/mxnet
 ```
-* Build MXNet: `cd /path/to/mxnet-ssd/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/install.html).
+* (Skip this step if you have offcial MXNet installed.) Build MXNet: `cd /path/to/mxnet-ssd/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/install.html).
 ```
 # for Ubuntu/Debian
 cp make/config.mk ./config.mk
