@@ -33,6 +33,8 @@ class MultiBoxMetric(mx.metric.EvalMetric):
         valid_count = np.sum(cls_label >= 0)
         # overall accuracy & object accuracy
         label = cls_label.flatten()
+        # in case you have a 'other' class
+        label(np.where(label >= cls_prob.shape[1])) = 0
         mask = np.where(label >= 0)[0]
         indices = np.int64(label[mask])
         prob = cls_prob.transpose((0, 2, 1)).reshape((-1, cls_prob.shape[1]))

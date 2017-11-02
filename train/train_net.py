@@ -114,7 +114,7 @@ def train_net(network, train_path, num_classes, batch_size,
               voc07_metric=False, nms_topk=400, force_suppress=False,
               train_list="", val_path="", val_list="", iter_monitor=0,
               monitor_pattern=".*", log_file=None, optimizer='sgd', tensorboard=False,
-              checkpoint_period=5):
+              checkpoint_period=5, min_neg_samples=0):
     """
     Wrapper for training phase.
 
@@ -186,6 +186,9 @@ def train_net(network, train_path, num_classes, batch_size,
         log to file if enabled
     tensorboard : bool
         record logs into tensorboard
+    min_neg_samples : int
+        always have some negative examples, no matter how many positive there are.
+        this is useful when training on images with no ground-truth.
     checkpoint_period : int
         a checkpoint will be saved every "checkpoint_period" epochs
     """
@@ -222,7 +225,7 @@ def train_net(network, train_path, num_classes, batch_size,
 
     # load symbol
     net = get_symbol_train(network, data_shape[1], num_classes=num_classes,
-                           nms_thresh=nms_thresh, force_suppress=force_suppress, nms_topk=nms_topk)
+                           nms_thresh=nms_thresh, force_suppress=force_suppress, nms_topk=nms_topk, minimum_negative_samples=min_neg_samples)
 
     # define layers with fixed weight/bias
     if freeze_layer_pattern.strip():

@@ -5,6 +5,7 @@ nvidia-docker run -it --rm \
 -v /home/oper/Datasets:/root/mxnet-ssd/data \
 -v /home/oper/david/mxnet-ssd/model:/root/mxnet-ssd/model \
 -v /home/oper/david/mxnet-ssd/output:/root/mxnet-ssd/output \
+-v /home/oper/david/mxnet-ssd/dataset:/root/mxnet-ssd/dataset \
 -v /home/oper/david/mxnet-ssd/train:/root/mxnet-ssd/train \
 -v /home/oper/david/mxnet-ssd/tools:/root/mxnet-ssd/tools \
 -v /home/oper/david/mxnet-ssd/symbol:/root/mxnet-ssd/symbol \

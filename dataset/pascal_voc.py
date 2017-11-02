@@ -77,6 +77,8 @@ class PascalVoc(Imdb):
         self object with filtered information
         """
 
+        # filter images with 'ignore' labels
+        self.labels = [f[f[:, 0] >= 0, :] for f in self.labels]
         # find indices of images with ground-truth labels
         gt_indices = [idx for idx, f in enumerate(self.labels) if not f.size == 0]
 
@@ -184,8 +186,9 @@ class PascalVoc(Imdb):
                 #     continue
                 cls_name = obj.find('name').text
                 if cls_name not in self.classes:
-                    continue
-                cls_id = self.classes.index(cls_name)
+                    cls_id = len(self.classes)
+                else:
+                    cls_id = self.classes.index(cls_name)
                 xml_box = obj.find('bndbox')
                 xmin = float(xml_box.find('xmin').text) / width
                 ymin = float(xml_box.find('ymin').text) / height

@@ -8,7 +8,7 @@ from dataset.pascal_voc import PascalVoc
 from dataset.mscoco import Coco
 from dataset.concat_db import ConcatDB
 
-def load_pascal(image_set, year, devkit_path, shuffle=False, class_names=None):
+def load_pascal(image_set, year, devkit_path, shuffle=False, class_names=None, true_negative=None):
     """
     wrapper function for loading pascal voc dataset
 
@@ -41,7 +41,7 @@ def load_pascal(image_set, year, devkit_path, shuffle=False, class_names=None):
 
     imdbs = []
     for s, y in zip(image_set, year):
-        imdbs.append(PascalVoc(s, y, devkit_path, shuffle, is_train=True, class_names=class_names))
+        imdbs.append(PascalVoc(s, y, devkit_path, shuffle, is_train=True, class_names=class_names, true_negative_images=true_negative))
     if len(imdbs) > 1:
         return ConcatDB(imdbs, shuffle)
     else:
@@ -89,6 +89,8 @@ def parse_args():
                         type=str)
     parser.add_argument('--shuffle', dest='shuffle', help='shuffle list',
                         type=bool, default=True)
+    parser.add_argument('--true-negative', dest='true_negative', help='use images with no GT as true_negative',
+                        type=bool, default=False)
     args = parser.parse_args()
     return args
 
@@ -99,7 +101,7 @@ if __name__ == '__main__':
     else:
         assert args.target is not None, 'for a subset of classes, specify a target path. Its for your own safety'
     if args.dataset == 'pascal':
-        db = load_pascal(args.set, args.year, args.root_path, args.shuffle, args.class_names)
+        db = load_pascal(args.set, args.year, args.root_path, args.shuffle, args.class_names, args.true_negative)
         print("saving list to disk...")
         db.save_imglist(args.target, root=args.root_path)
     elif args.dataset == 'coco':

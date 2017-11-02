@@ -91,6 +91,9 @@ def parse_args():
                         help='use PASCAL VOC 07 11-point metric')
     parser.add_argument('--tensorboard', dest='tensorboard', type=bool, default=False,
                         help='save metrics into tensorboard readable files')
+    parser.add_argument('--min_neg_samples', dest='min_neg_samples', type=int, default=0,
+                        help='min number of negative samples taken in hard mining.')
+
     args = parser.parse_args()
     return args
 
@@ -127,6 +130,7 @@ if __name__ == '__main__':
               args.frequent, args.learning_rate, args.momentum, args.weight_decay,
               args.lr_refactor_step, args.lr_refactor_ratio,
               val_path=args.val_path,
+              min_neg_samples=args.min_neg_samples,
               num_example=args.num_example,
               class_names=class_names,
               label_pad_width=args.label_width,

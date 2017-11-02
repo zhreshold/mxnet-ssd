@@ -11,7 +11,7 @@ def import_module(module_name):
 
 def get_symbol_train(network, num_classes, from_layers, num_filters, strides, pads,
                      sizes, ratios, normalizations=-1, steps=[], min_filter=128,
-                     nms_thresh=0.5, force_suppress=False, nms_topk=400, **kwargs):
+                     nms_thresh=0.5, force_suppress=False, nms_topk=400, minimum_negative_samples=0, **kwargs):
     """Build network symbol for training SSD
 
     Parameters
@@ -55,7 +55,9 @@ def get_symbol_train(network, num_classes, from_layers, num_filters, strides, pa
         whether suppress different class objects
     nms_topk : int
         apply NMS to top K detections
-
+    minimum_negative_samples : int
+        always have some negative examples, no matter how many positive there are.
+        this is useful when training on images with no ground-truth.
     Returns
     -------
     mx.Symbol
@@ -72,7 +74,7 @@ def get_symbol_train(network, num_classes, from_layers, num_filters, strides, pa
 
     tmp = mx.contrib.symbol.MultiBoxTarget(
         *[anchor_boxes, label, cls_preds], overlap_threshold=.5, \
-        ignore_label=-1, negative_mining_ratio=3, minimum_negative_samples=0, \
+        ignore_label=-1, negative_mining_ratio=3, minimum_negative_samples=minimum_negative_samples, \
         negative_mining_thresh=.5, variances=(0.1, 0.1, 0.2, 0.2),
         name="multibox_target")
     loc_target = tmp[0]
