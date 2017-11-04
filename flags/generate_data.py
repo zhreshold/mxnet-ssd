@@ -143,5 +143,5 @@ if __name__ == "__main__":
 
 	generate_image_pipeline(label_file_names, labels, args.save_folder, TRAIN_FOLDER, args.bg_img_folder,
 							1, total_base_images = 120000)
-	generate_image_pipeline(label_file_names, labels, args.save_folder, TEST_FOLDER, args.bg_img_folder,
+	generate_image_pipeline(label_file_names, labels, args.save_folder, VAL_FOLDER, args.bg_img_folder,
 							190000, total_base_images = 10000)
