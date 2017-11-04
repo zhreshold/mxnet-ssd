@@ -5,7 +5,17 @@ import numpy as np
 
 
 class ParseLogCallback(object):
+    """
+    1. log distribution's std to tensorboard (as distribution)
+    This function make use of mxnet's "monitor" module, and it's output to a log file.
+    while training, it is possible to specify layers to be monitored.
+    these layers will be printed to a given log file,
+    their values are computed **asynchronously**.
 
+    2. log training loss to tensorboard (as scalar)
+
+    Currently - does not support resume training..
+    """
     def __init__(self, dist_logging_dir=None, scalar_logging_dir=None,
                  logfile_path=None, batch_size=None, iter_monitor=None,
                  frequent=None, prefix='ssd'):
@@ -17,7 +27,6 @@ class ParseLogCallback(object):
         self.frequent = frequent
         self.prefix = prefix
         self.batch = 0
-        self.epoch = 0
         self.line_idx = 0
         try:
             from tensorboard import SummaryWriter
@@ -28,8 +37,9 @@ class ParseLogCallback(object):
 
     def __call__(self, param):
         """Callback to parse a log file and and add params to TensorBoard."""
+
         # save distributions from the monitor output log
-        if self.batch % self.iter_monitor == 0:
+        if self.iter_monitor is not None and self.batch % self.iter_monitor == 0:
             with open(self.logfile_path) as fp:
                 for i in range(self.line_idx):
                     fp.next()
@@ -42,6 +52,8 @@ class ParseLogCallback(object):
                         if np.isfinite(layer_value):
                             self.dist_summary_writer.add_histogram(layer_name, layer_value)
                     self.line_idx += 1
+
+        # save training loss
         if self.batch % self.frequent == 0:
             if param.eval_metric is None:
                 return
@@ -74,7 +86,7 @@ class LogROCCallback(object):
             logging.error('You can install tensorboard via `pip install tensorboard`.')
 
     def __call__(self, param):
-        """Callback to log training speed and metrics in TensorBoard."""
+        """Callback to log ROC graph as an image in TensorBoard."""
         for class_name in self.class_names:
             roc = os.path.join(self.roc_path, 'roc_'+class_name+'.png')
             if not os.path.exists(roc):
@@ -83,9 +95,13 @@ class LogROCCallback(object):
             self.summary_writer.add_image(self.prefix+'_'+class_name, im)
 
 class LogDistributionsCallback(object):
-    """Log metrics periodically in TensorBoard.
+    """
+    This function has been deprecated because it consumes too much time.
+    The faster way is to use "ParseLogCallback" with a 'iter_monitor' flag
+
+    Log metrics periodically in TensorBoard.
     This callback works almost same as `callback.Speedometer`, but write TensorBoard event file
-    for visualization. For more usage, please refer https://github.com/dmlc/tensorboard
+    for visualization.
     logging_dir : str
         where the tensorboard file will be created
     layers_list : list[str]
@@ -101,7 +117,7 @@ class LogDistributionsCallback(object):
             logging.error('You can install tensorboard via `pip install tensorboard`.')
 
     def __call__(self, param):
-        """Callback to log training speed and metrics in TensorBoard."""
+        """Callback to log layers' distributions in TensorBoard."""
         if param.locals is None:
             return
         for name, value in param.locals['arg_params'].iteritems():
