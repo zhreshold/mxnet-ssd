@@ -16,6 +16,8 @@ remarkable traits of MXNet.
 * The result is almost identical to the original version. However, due to different implementation details, the results might differ slightly.
 
 ### What's new
+* Now this repo is internally synchronized up to data with offical mxnet backend. `pip install mxnet` will work for this repo as well in most cases.
+* MobileNet pretrained model now provided.
 * Added multiple trained models.
 * Added a much simpler way to compose network from mainstream classification networks (resnet, inception...) and [Guide](symbol/README.md).
 * Update to the latest version according to caffe version, with 5% mAP increase.
@@ -36,6 +38,9 @@ remarkable traits of MXNet.
 | [VGG16_reduced 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval | VOC07 test| 79.9| slow |
 | [Inception-v3 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/inceptionv3_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fastest |
 | [Resnet-50 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/resnet50_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fast |
+| [MobileNet 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.7-alpha/mobilenet-ssd-512.zip) | VOC07+12 trainval| VOC07 test| 72.5 | super fast |
+| [MobileNet 608x608](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.7-alpha/mobilenet-ssd-608.zip) | VOC07+12 trainval| VOC07 test| 74.7 | super fast |
+
 
 *More to be added*
 
@@ -69,7 +74,7 @@ git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
 # git submodule update --recursive --init
 cd mxnet-ssd/mxnet
 ```
-* Build MXNet: `cd /path/to/mxnet-ssd/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/install.html).
+* (Skip this step if you have offcial MXNet installed.) Build MXNet: `cd /path/to/mxnet-ssd/mxnet`. Follow the official instructions [here](http://mxnet.io/get_started/install.html).
 ```
 # for Ubuntu/Debian
 cp make/config.mk ./config.mk
