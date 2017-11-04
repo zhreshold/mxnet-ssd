@@ -9,9 +9,10 @@ from math import ceil, floor, pi, sqrt
 from data_utils.write_xml_file import write_xml_file
 from data_utils.folder_names import LABEL
 
-IMAGE_SIZE = 224
+IMAGE_SIZE = 224 # Input image size
 
 def tf_resize_images_with_white_bg(img, image_width, image_height, white_area_percent):
+    # Estimate coordinates of the image inside white border based percentage area of white border.
     box_area = image_width * image_height
     resized_area = (100 - white_area_percent) * box_area / 100.0
     resized_width = ceil(image_width * sqrt(resized_area / box_area))
@@ -32,6 +33,7 @@ def tf_resize_images_with_white_bg(img, image_width, image_height, white_area_pe
                    width_start : width_start + resized_width, :] = r_img[:, :, :]
     return return_img
 
+# Rotation is not being used currently. Use this method if it shows improvement in results.
 def tf_rotate_images(img, angle_at):
     radian = angle_at * pi / 180
     tf.reset_default_graph()
@@ -49,14 +51,14 @@ def save_img_as_png(X_file_data, file_name, folder_name):
 def fetch_image_files(label_list):
     image_array = []
     for file_path in label_list:
-        img = mpimg.imread(file_path)[:, :, :3]
+        img = mpimg.imread(file_path)[:, :, :3]  # Don't include alpha channel.
         image_array.append(img)
     image_array = np.array(image_array)
     return image_array
 
 def add_salt_pepper_noise(image):
     row,col,ch = image.shape
-    s_vs_p = 0.2
+    s_vs_p = 0.25
     amount = 0.004
     # Salt mode
     num_salt = np.ceil(amount * image.size * s_vs_p)
@@ -80,6 +82,7 @@ def add_gaussian_noise(image):
     return noisy
 
 def tf_generate_images(flag_file_names, flag_labels, bg_img_folder, save_img_folder, save_xml_folder, parameter_dict):
+    # Extract the parameter values from the dictionary.
     scale_at = parameter_dict['scale_at']
     angle_at = parameter_dict['angle_at']
     celeb_index_at = parameter_dict['celeb_index_at']
@@ -89,6 +92,7 @@ def tf_generate_images(flag_file_names, flag_labels, bg_img_folder, save_img_fol
     border_area = parameter_dict['border_area']
     bg_total_files = parameter_dict['bg_total_files']
 
+    # Fetch the flag images and resize them.
     flag_files = fetch_image_files(flag_file_names)
     flag_height, flag_width = raw_flag_size
     flag_size = (ceil(scale_at * flag_height), ceil(scale_at * flag_width))
@@ -97,11 +101,13 @@ def tf_generate_images(flag_file_names, flag_labels, bg_img_folder, save_img_fol
     #flag_files_op = tf_rotate_images(flag_files_op, angle_at)
     flag_file_shape = flag_files_op[0].shape
 
+    # Various index counters
     file_index_at = 0
     current_celeb_index = celeb_index_at
     current_save_index = save_index
-    cwd = os.getcwd()
     flag_index_at = 0
+
+    cwd = os.getcwd()
     for i in range(len(no_of_files_array)):
         current_celeb_index += 1
         if current_celeb_index >= bg_total_files:
