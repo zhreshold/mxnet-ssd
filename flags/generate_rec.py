@@ -12,9 +12,9 @@ def load_flags(image_path, annotation_path, class_name_path, shuffle = True):
 
 def parse_args():
 	parser = argparse.ArgumentParser(description='Prepare lists for dataset')
-	parser.add_argument('data_path', help = 'Give path where your image folders are present', type = str)
+	parser.add_argument('--data-path', dest = 'data_path', help = 'Give path where your image folders are present', 
+            default = os.path.join(os.getcwd(), 'input_data'), type = str)
 	# Ensure that this path has GeneratedData_<Train,Val> folder, Annotations_<Train,Val> and class_names.txt
-	#parser.add_argument('--dataset', dest = 'dataset', help = '1 for Train, 2 for Validation', default = 1, type = int)
 	args = parser.parse_args()
 	return args
 

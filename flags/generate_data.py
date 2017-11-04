@@ -128,12 +128,13 @@ def generate_image_pipeline(X_files, y_data, save_folder, folder_type, bg_img_fo
 
 
 def parse_args():
-	parser = argparse.ArgumentParser(description = 'Resize data and prepare labels')
-	parser.add_argument('flag_folder', help = 'Where flags are present', type = str)
-	parser.add_argument('bg_img_folder', help = 'Where background images are present', type = str)
-	parser.add_argument('save_folder', help = 'Where the generated files are to be stored', type = str)
-	args = parser.parse_args()
-	return args
+    parser = argparse.ArgumentParser(description = 'Resize data and prepare labels')
+    parser.add_argument('flag_folder', help = 'Where flags are present', type = str)
+    parser.add_argument('bg_img_folder', help = 'Where background images are present', type = str)
+    parser.add_argument('--save-folder', dest = 'save_folder', help = 'Where the generated files are to be stored', 
+            default = os.path.join(os.getcwd(), 'input_data'), type = str)
+    args = parser.parse_args()
+    return args
 
 if __name__ == "__main__":
 	args = parse_args()
