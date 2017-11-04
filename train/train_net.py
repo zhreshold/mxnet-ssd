@@ -203,15 +203,15 @@ def train_net(net, train_path, num_classes, batch_size,
         # check what layers mismatch with the loaded parameters
         exe = net.simple_bind(mx.cpu(), data=(1, 3, 300, 300), label=(1, 1, 5), grad_req='null')
         arg_dict = exe.arg_dict
-	fixed_param_names = []
+        fixed_param_names = []
         for k, v in arg_dict.items():
             if k in args:
                 if v.shape != args[k].shape:
                     del args[k]
                     logging.info("Removed %s" % k)
                 else:
-		    if not 'pred' in k:
-		    	fixed_param_names.append(k)
+                    if not 'pred' in k:
+                        fixed_param_names.append(k)
     elif pretrained:
         logger.info("Start training with {} from pretrained model {}"
             .format(ctx_str, pretrained))
