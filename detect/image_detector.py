@@ -27,7 +27,7 @@ class ImageDetector(object):
 		device to use, if None, use mx.cpu() as default context
 	"""
 	def __init__(self, symbol, model_prefix, epoch, data_shape, mean_pixels, \
-					classes, batch_size=1, ctx=None):
+					classes, thresh = 0.6, plot_confidence = True, batch_size=1, ctx=None):
 		self.ctx = ctx
 		if self.ctx is None:
 			self.ctx = mx.cpu()
@@ -42,21 +42,23 @@ class ImageDetector(object):
 		self.mean_pixels = mean_pixels
 		self.classes = classes
 		self.colors = []
-		self.fill_random_colors()
+		self.fill_random_colors_int()
+		self.thresh = thresh
+		self.plot_confidence = plot_confidence
 
 	def fill_random_colors(self):
 		import random
 		for i in range(len(self.classes)):
 			self.colors.append((random.random(), random.random(), random.random()))
 
-		print(self.colors)
+		#print(self.colors)
 
 	def fill_random_colors_int(self):
 		import random
 		for i in range(len(self.classes)):
 			self.colors.append((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
 
-		print(self.colors)
+		#print(self.colors)
 
 
 	def detect(self, det_iter, show_timer=False):
@@ -116,14 +118,14 @@ class ImageDetector(object):
 		test_iter = DetTestImageIter(im_list, 1, self.data_shape, self.mean_pixels)
 		return self.detect(test_iter, show_timer)
 
-	def plot_rects(self, img, dets, thresh=0.6):
+	def plot_rects(self, img, dets):
 		img_shape = img.shape
 		for i in range(dets.shape[0]):
 			cls_id = int(dets[i, 0])
 			if cls_id >= 0:
 				score = dets[i, 1]
 				#print('Score is {}, class {}'.format(score, cls_id))
-				if score > thresh:
+				if score > self.thresh:
 					xmin = int(dets[i, 2] * img_shape[1])
 					ymin = int(dets[i, 3] * img_shape[0])
 					xmax = int(dets[i, 4] * img_shape[1])
@@ -133,9 +135,9 @@ class ImageDetector(object):
 
 					class_name = self.classes[cls_id]
 					cv2.putText(img, class_name, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 4)
-					print('Class id = {}, Score = {}, Country = {}, rect = ({}, {}, {}, {})'.format(cls_id, score, class_name, xmin, ymin, xmax, ymax))
+					#print('Class id = {}, Score = {}, Country = {}, rect = ({}, {}, {}, {})'.format(cls_id, score, class_name, xmin, ymin, xmax, ymax))
 
-	def detect_and_visualize_image(self, img, thresh=0.6, show_timer=False):
+	def detect_and_visualize_image(self, img, show_timer=False):
 		"""
 		wrapper for im_detect and visualize_detection
 
@@ -157,17 +159,17 @@ class ImageDetector(object):
 		resized_img = resized_img.asnumpy()
 		resized_img /= 255.0
 		for k, det in enumerate(dets):
-			self.plot_rects(resized_img, det, thresh)
+			self.plot_rects(resized_img, det)
 		return resized_img
 
-	def scale_and_plot_rects(self, img, dets, thresh=0.6):
+	def scale_and_plot_rects(self, img, dets):
 		img_shape = img.shape
 		for i in range(dets.shape[0]):
 			cls_id = int(dets[i, 0])
 			if cls_id >= 0:
 				score = dets[i, 1]
 				#print('Score is {}, class {}'.format(score, cls_id))
-				if score > thresh:
+				if score > self.thresh:
 					xmin = int(dets[i, 2] * img_shape[1])
 					ymin = int(dets[i, 3] * img_shape[0])
 					xmax = int(dets[i, 4] * img_shape[1])
@@ -176,13 +178,13 @@ class ImageDetector(object):
 					cv2.rectangle(img, (xmin, ymin), (xmax, ymax), self.colors[cls_id], 4)
 
 					class_name = self.classes[cls_id]
-					cv2.putText(img, class_name, (xmin, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 4)
-					score_color = (0, 255, 0) if score > 0.5 else (255, 0, 0)
-					cv2.putText(img, '{:.3f}'.format(score), (xmax - 60, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 1, score_color, 1)
-					if score < 0.5:
-						print('Class id = {}, Score = {}, Thresh = {}'.format(cls_id, score, thresh))
+					cv2.putText(img, class_name, (xmin, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 255), 3)
+					if self.plot_confidence:
+						score_color = (0, 255, 0) if score > 0.5 else (255, 0, 0)
+						cv2.putText(img, '{:.3f}'.format(score), (xmax - 60, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 1, score_color, 1)
+					
 
-	def detect_and_layover_image(self, img, thresh=0.6, show_timer=False):
+	def detect_and_layover_image(self, img, show_timer=False):
 		"""
 		wrapper for im_detect and visualize_detection
 
@@ -202,5 +204,5 @@ class ImageDetector(object):
 		"""
 		dets, _ = self.im_detect(img, show_timer=show_timer)
 		for k, det in enumerate(dets):
-			self.scale_and_plot_rects(img, det, thresh)
+			self.scale_and_plot_rects(img, det)
 		return img

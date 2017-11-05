@@ -11,177 +11,87 @@ from detect.image_detector import ImageDetector
 from detect.detector import Detector
 from symbol.symbol_factory import get_symbol
 
-from utils import FPS, WebcamVideoStream
-from multiprocessing import Queue, Pool
+from utils import WebcamVideoStream
 
-network = 'vgg16_reduced'
-class_names = ['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria',\
-	 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia',\
-	  'BosniaandHerzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'BurkinaFaso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada',\
-	   'CapeVerde', 'CentralAfricanRepublic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'CostaRica', 'Croatia', 'Cuba', 'Cyprus',\
-	    'CzechRepublic', 'DemocraticRepublicoftheCongo', 'Denmark', 'Djibouti', 'DominicanRepublic', 'EastTimor', 'Ecuador', 'Egypt',\
-		 'ElSalvador', 'EquatorialGuinea', 'Eritrea', 'Estonia', 'Ethiopia', 'FalklandIslands', 'FederatedStatesofMicronesia', 'Fiji',\
-		  'Finland', 'France', 'FrenchGuiana', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Greenland', 'Guatemala',\
-		   'Guinea', 'GuineaBissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq',\
-		    'Ireland', 'Israel', 'Italy', 'IvoryCoast', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait',\
-			 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',\
-			  'Macedonia', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'MarshallIslands', 'Mauritania',\
-			   'Mauritius', 'Mexico', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia',\
-			    'Nauru', 'Nepal', 'Netherlands', 'NewCaledonia', 'NewZealand', 'Nicaragua', 'Niger', 'Nigeria', 'NorthKorea', 'Norway',\
-				 'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'PapuaNewGuinea', 'Paraguay', 'Peru', 'Philippines', 'Poland',\
-				  'Portugal', 'PuertoRico', 'Qatar', 'RepublicofCongo', 'Romania', 'Russia', 'Rwanda', 'Samoa', 'SanMarino',\
-				   'SaoTomeandPrincipe', 'SaudiArabia', 'Senegal', 'Serbia', 'Seychelles', 'SierraLeone', 'Singapore', 'Slovakia',\
-				    'Slovenia', 'SolomonIslands', 'Somalia', 'SouthAfrica', 'SouthKorea', 'SouthSudan', 'Spain', 'SriLanka', 'Sudan',\
-					 'Suriname', 'Swaziland', 'Sweden', 'Switzerland', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Togo', 'Tonga',\
-					  'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'UnitedArabEmirates', 'UnitedKingdom',\
-					   'UnitedStates', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'VaticanCity', 'Venezuela', 'Vietnam', 'WesternSahara',\
-					    'Yemen', 'Zambia', 'Zimbabwe']
+class_names = 'Argentina, Australia, Bhutan, Brazil, Canada, China, Cuba, France, Germany, Greece, India, \
+ 			   Kenya, Mexico, Norway, Portugal, Saudi Arabia, South Africa, Sri Lanka, Sweden, Thailand, \
+			   Turkey, Ukraine, U.A.E., U.K., U.S.A.'	
+detector = None
 
-class_names = ['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia', 'Austria',\
-	 'Azerbaijan']
-epoch = 6
-cwd = os.getcwd()
-prefix = cwd + '/model/ssd'
-data_shape = 300
-color_subtract = (123, 117, 104)
-nms_thresh = 0.5
-force_nms = True
-show_timer = True
-thresh = 0.5
-
-def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx, class_names,
+def get_detector(net, prefix, epoch, data_shape, mean_pixels, ctx, class_names, thresh, plot_confidence,
                  nms_thresh=0.5, force_nms=True, nms_topk=400):
-	"""
-	wrapper for initialize a detector
 
-	Parameters:
-	----------
-	net : str
-		test network name
-	prefix : str
-		load model prefix
-	epoch : int
-		load model epoch
-	data_shape : int
-		resize image shape
-	mean_pixels : tuple (float, float, float)
-		mean pixel values (R, G, B)
-	ctx : mx.ctx
-		running context, mx.cpu() or mx.gpu(?)
-	num_class : int
-		number of classes
-	nms_thresh : float
-		non-maximum suppression threshold
-	force_nms : bool
-		force suppress different categories
-	"""
 	if net is not None:
 		net = get_symbol(net, data_shape, num_classes=len(class_names), nms_thresh=nms_thresh,
 			force_nms=force_nms, nms_topk=nms_topk)
-	detector = ImageDetector(net, prefix, epoch, data_shape, mean_pixels, class_names, ctx=ctx)
-	#detector = Detector(net, prefix, epoch, data_shape, mean_pixels, ctx=ctx)
+	detector = ImageDetector(net, prefix, epoch, data_shape, mean_pixels, class_names, thresh,\
+			 plot_confidence, ctx=ctx)
 	return detector
-
-detector = get_detector(network, prefix, epoch, data_shape, color_subtract, mx.gpu(0),
-                            class_names, nms_thresh, force_nms)
 
 def process_image(image_frame):
 	# run detection
-	detected_img = detector.detect_and_visualize_image(image_frame, thresh, show_timer)
-	#detected_img = detector.detect_and_layover_image(image_frame, thresh, show_timer)
+	detected_img = detector.detect_and_layover_image(image_frame, False)
 	return detected_img
 
-def worker(input_q, output_q):
-	fps = FPS().start()
-	while True:
-		fps.update()
-		frame = input_q.get()
-		#frame = np.transpose(frame, (2, 0, 1))
-		#output_q.put(detect_objects(frame, sess, detection_graph))
-		detected_img = process_image(frame)
-		output_q.put(detected_img)
+def parse_args():
+	parser = argparse.ArgumentParser(description='Detect objects in the live video')
+	parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
+						help='which network to use')
+	parser.add_argument('--epoch', dest='epoch', help='epoch of pretrained model',
+						default=1, type=int)
+	parser.add_argument('--prefix', dest='prefix', help='Trained model prefix',
+						default=os.path.join(os.getcwd(), 'model', 'ssd'), type=str)
+	parser.add_argument('--thresh', dest='thresh', help='Threshold of confidence level',
+						default=0.43, type=float)
+	parser.add_argument('--plot-prob', dest='plot_prob', help='Should probabilities be printed. (1 = Yes, 0 = No)',
+						default=1, type=int)
+	parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.45,
+						help='non-maximum suppression threshold')
+	parser.add_argument('--mean-r', dest='mean_r', type=float, default=123,
+						help='red mean value')
+	parser.add_argument('--mean-g', dest='mean_g', type=float, default=117,
+						help='green mean value')
+	parser.add_argument('--mean-b', dest='mean_b', type=float, default=104,
+						help='blue mean value')
+	parser.add_argument('--data-shape', dest='data_shape', type=int, default=300,
+						help='set image shape')
+	parser.add_argument('--class-names', dest='class_names', type=str,
+						default = class_names, help='string of comma separated names')
+	parser.add_argument('--force', dest='force_nms', type=bool, default=True,
+						help='force non-maximum suppression on different class')
+	parser.add_argument('--has-gpu', dest='gpu', help='GPU device 1 if present else 0',
+						default=1, type=int)
 
-	fps.stop()
-
-if __name__ == '__main__':
-	parser = argparse.ArgumentParser()
 	parser.add_argument('-src', '--source', dest='video_source', type=int,
 						default=0, help='Device index of the camera.')
 	parser.add_argument('-wd', '--width', dest='width', type=int,
 						default=480, help='Width of the frames in the video stream.')
 	parser.add_argument('-ht', '--height', dest='height', type=int,
-						default=360, help='Height of the frames in the video stream.')
-	parser.add_argument('-num-w', '--num-workers', dest='num_workers', type=int,
-						default=1, help='Number of workers.')
-	parser.add_argument('-q-size', '--queue-size', dest='queue_size', type=int,
-						default=5, help='Size of the queue.')
+						default=640, help='Height of the frames in the video stream.')
 	args = parser.parse_args()
+	return args
 
-	#time.sleep(1)
+if __name__ == '__main__':
+	args = parse_args()
 
-	#'''
+	color_subtract = (args.mean_r, args.mean_g, args.mean_b)
+	ctx = mx.gpu(0) if args.gpu == 1 else mx.cpu(0)
+	class_names = [class_name.strip() for class_name in args.class_names.split(',')]
+	detector = get_detector(args.network, args.prefix, args.epoch, args.data_shape, color_subtract, ctx,
+                            class_names, args.thresh, args.plot_prob, args.nms_thresh, args.force_nms)
+
 	video_capture = WebcamVideoStream(src=args.video_source,
 										width=args.width,
 										height=args.height).start()
-	fps = FPS().start()
 
-	while True:  # fps._numFrames < 120
+	while True:  
 		frame = video_capture.read()
 		detected_img = process_image(frame)
-
-		t = time.time()
-
 		cv2.imshow('Video', detected_img)
-		fps.update()
-
-		#print('[INFO] elapsed time: {:.2f}'.format(time.time() - t))
 
 		if cv2.waitKey(1) & 0xFF == ord('q'):
 			break		
-		
-
-	fps.stop()
-	#print('[INFO] elapsed time (total): {:.2f}'.format(fps.elapsed()))
-	#print('[INFO] approx. FPS: {:.2f}'.format(fps.fps()))
 
 	video_capture.stop()
 	cv2.destroyAllWindows()
-	#'''
 
-
-	'''
-	logger = multiprocessing.log_to_stderr()
-	#logger.setLevel(multiprocessing.SUBDEBUG)
-
-	input_q = Queue(maxsize=args.queue_size)
-	output_q = Queue(maxsize=args.queue_size)
-	pool = Pool(args.num_workers, worker, (input_q, output_q))
-
-	video_capture = WebcamVideoStream(src=args.video_source,
-										width=args.width,
-										height=args.height).start()
-	fps = FPS().start()
-
-	while True:  # fps._numFrames < 120
-		frame = video_capture.read()
-		input_q.put(frame)
-
-		t = time.time()
-
-		cv2.imshow('Video', output_q.get())
-		fps.update()
-
-		#print('[INFO] elapsed time: {:.2f}'.format(time.time() - t))
-
-		if cv2.waitKey(1) & 0xFF == ord('q'):
-			break		
-		
-
-	fps.stop()
-	#print('[INFO] elapsed time (total): {:.2f}'.format(fps.elapsed()))
-	#print('[INFO] approx. FPS: {:.2f}'.format(fps.fps()))
-
-	pool.terminate()
-	video_capture.stop()
-	cv2.destroyAllWindows()
-	'''
