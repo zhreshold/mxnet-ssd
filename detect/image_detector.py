@@ -83,7 +83,7 @@ class ImageDetector(object):
 		for pred, _, _ in self.mod.iter_predict(det_iter):
 			detections.append(pred[0].asnumpy())
 		time_elapsed = timer() - start
-		if show_timer and False:
+		if show_timer:
 			print("Detection time for {} images: {:.4f} sec".format(num_images, time_elapsed))
 		for output in detections:
 			for i in range(output.shape[0]):
@@ -132,7 +132,7 @@ class ImageDetector(object):
 					cv2.rectangle(img, (xmin, ymin), (xmax, ymax), self.colors[cls_id], 4)
 
 					class_name = self.classes[cls_id]
-					cv2.putText(img, str(cls_id), (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 4)
+					cv2.putText(img, class_name, (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 4)
 					print('Class id = {}, Score = {}, Country = {}, rect = ({}, {}, {}, {})'.format(cls_id, score, class_name, xmin, ymin, xmax, ymax))
 
 	def detect_and_visualize_image(self, img, thresh=0.6, show_timer=False):
@@ -173,12 +173,12 @@ class ImageDetector(object):
 					xmax = int(dets[i, 4] * img_shape[1])
 					ymax = int(dets[i, 5] * img_shape[0])
 
-					cv2.rectangle(img, (xmin, ymin), (xmax, ymax), self.colors[cls_id], 8)
+					cv2.rectangle(img, (xmin, ymin), (xmax, ymax), self.colors[cls_id], 4)
 
 					class_name = self.classes[cls_id]
-					cv2.putText(img, str(cls_id), (xmin, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 0, 255), 8)
+					cv2.putText(img, class_name, (xmin, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 4)
 					score_color = (0, 255, 0) if score > 0.5 else (255, 0, 0)
-					cv2.putText(img, '{:.3f}'.format(score), (xmax - 140, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 2, score_color, 4)
+					cv2.putText(img, '{:.3f}'.format(score), (xmax - 60, ymin - 15), cv2.FONT_HERSHEY_SIMPLEX, 1, score_color, 1)
 					if score < 0.5:
 						print('Class id = {}, Score = {}, Thresh = {}'.format(cls_id, score, thresh))
 

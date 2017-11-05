@@ -18,7 +18,7 @@ def parse_args():
 	args = parser.parse_args()
 	return args
 
-def get_paths(dataset):
+def get_paths(dataset, base_path):
 	image_path, annotation_path, list_save_name = '', '', ''
 	# For train dataset
 	if dataset == 0:
@@ -34,12 +34,12 @@ def get_paths(dataset):
 
 if __name__ == "__main__":
 	args = parse_args()
-	base_path = args.data_path
+	input_data_path = args.data_path
 	for dataset in range(2):
-		image_path, annotation_path, list_save_name = get_paths(dataset)		
+		image_path, annotation_path, list_save_name = get_paths(dataset, input_data_path)		
 
-		class_name_path = os.path.join(base_path, 'class_names.txt')
-		lst_path = base_path + '/' + list_save_name
+		class_name_path = os.path.join(input_data_path, 'class_names.txt')
+		lst_path = input_data_path + '/' + list_save_name
 
 		db = load_flags(image_path, annotation_path, class_name_path)
 		db.save_imglist(lst_path, image_path)
@@ -52,4 +52,12 @@ if __name__ == "__main__":
 			os.path.abspath(lst_path), os.path.abspath(image_path),
 			"--shuffle", str(1), "--pack-label", "1"])
 
-		print("Record file {} generated...".format(list_save_name.split('.')[0] + '.rec'))
+		file_name = list_save_name.split('.')[0]
+		print("Record file {} generated...".format(file_name + '.rec'))
+
+		base_path_name = os.path.join(input_data_path, file_name)
+		target_path = curr_path + '/../data/' + file_name
+		os.rename(base_path_name + '.rec', target_path + '.rec')
+		os.rename(base_path_name + '.idx', target_path + '.idx')
+		os.rename(base_path_name + '.lst', target_path + '.lst')
+		print("Record file moved to {}".format(target_path))
