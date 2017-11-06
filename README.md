@@ -1,60 +1,16 @@
-# SSD: Single Shot MultiBox Object Detector
+# SSD based Object Detection for Country Flags 
 
-SSD is an unified framework for object detection with a single network.
+This is an example of Object Detection done for country flags making use of SSD Network in MXNet Framework.
 
-You can use the code to train/evaluate/test for object detection task.
+You can read the detailed post about the approach used in this project in my [Medium post](--------------).
 
-### Disclaimer
-This is a re-implementation of original SSD which is based on caffe. The official
-repository is available [here](https://github.com/weiliu89/caffe/tree/ssd).
-The arXiv paper is available [here](http://arxiv.org/abs/1512.02325).
+This repository is the forked version of [Zhreshold's MXNet-SSD](https://github.com/zhreshold/mxnet-ssd) which is a generic version of MXNet-SSD and some of the instructions of installation are copied from there.
 
-This example is intended for reproducing the nice detector while fully utilize the
-remarkable traits of MXNet.
-* The model is fully compatible with caffe version.
-* Model [converter](#convert-caffemodel) from caffe is available now!
-* The result is almost identical to the original version. However, due to different implementation details, the results might differ slightly.
+The trained network at present runs for detecting 25 country flags printed on rectangular placards. The countries' flags used are of Argentina, Australia, Bhutan, Brazil, Canada, China, Cuba, France, Germany, Greece, India, Kenya, Mexico, Norway, Portugal, Saudi Arabia, South Africa, Sri Lanka, Sweden, Thailand, Turkey, Ukraine, United Arab Emirates, United Kingdom and United States of America. The evaluation of the trained network can be done on still images or a pre-recorded video or even a live video feed.  This is the result of the network trained using VGG model.
 
-### What's new
-* Now this repo is internally synchronized up to data with offical mxnet backend. `pip install mxnet` will work for this repo as well in most cases.
-* MobileNet pretrained model now provided.
-* Added multiple trained models.
-* Added a much simpler way to compose network from mainstream classification networks (resnet, inception...) and [Guide](symbol/README.md).
-* Update to the latest version according to caffe version, with 5% mAP increase.
-* Use C++ record iterator based on back-end multi-thread engine to achieve huge speed up on multi-gpu environments.
-* Monitor validation mAP during training.
-* More network symbols under development and test.
-* Extra operators are now in `mxnet/src/operator/contrib`, symbols are modified. Please use [Release-v0.2-beta](https://github.com/zhreshold/mxnet-ssd/releases/tag/v0.2-beta) for old models.
+![Detected Result](https://user-images.githubusercontent.com/13696749/32447111-13a44b6a-c331-11e7-9968-9c10343d3e31.png)
 
-### Demo results
-![demo1](https://cloud.githubusercontent.com/assets/3307514/19171057/8e1a0cc4-8be0-11e6-9d8f-088c25353b40.png)
-![demo2](https://cloud.githubusercontent.com/assets/3307514/19171063/91ec2792-8be0-11e6-983c-773bd6868fa8.png)
-![demo3](https://cloud.githubusercontent.com/assets/3307514/19171086/a9346842-8be0-11e6-8011-c17716b22ad3.png)
-
-### mAP
-|        Model          | Training data    | Test data |  mAP | Note |
-|:-----------------:|:----------------:|:---------:|:----:|:-----|
-| [VGG16_reduced 300x300](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_300_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 77.8| fast |
-| [VGG16_reduced 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.5-beta/vgg16_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval | VOC07 test| 79.9| slow |
-| [Inception-v3 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/inceptionv3_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fastest |
-| [Resnet-50 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/resnet50_ssd_512_voc0712_trainval.zip) | VOC07+12 trainval| VOC07 test| 78.9 | fast |
-| [MobileNet 512x512](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.7-alpha/mobilenet-ssd-512.zip) | VOC07+12 trainval| VOC07 test| 72.5 | super fast |
-| [MobileNet 608x608](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.7-alpha/mobilenet-ssd-608.zip) | VOC07+12 trainval| VOC07 test| 74.7 | super fast |
-
-
-*More to be added*
-
-### Speed
-|         Model         |   GPU            | CUDNN | Batch-size | FPS* |
-|:---------------------:|:----------------:|:-----:|:----------:|:----:|
-| VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     16     | 95   |
-| VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     8      | 95   |
-| VGG16_reduced 300x300 | TITAN X(Maxwell) | v5.1  |     1      | 64   |
-| VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     8      | 36   |
-| VGG16_reduced 300x300 | TITAN X(Maxwell) |  N/A  |     1      | 28   |
-
-*Forward time only, data loading and drawing excluded.*
-
+## Instructions to run the code
 ### Getting started
 * You will need python modules: `cv2`, `matplotlib` and `numpy`.
 If you use mxnet-python api, you probably have already got them.
@@ -68,7 +24,7 @@ sudo apt-get install python-opencv python-matplotlib python-numpy
 sudo apt-get install git
 # cd where you would like to clone this repo
 cd ~
-git clone --recursive https://github.com/zhreshold/mxnet-ssd.git
+git clone --recursive https://github.com/Prasad9/mxnet-ssd.git
 # make sure you clone this with --recursive
 # if not done correctly or you are using downloaded repo, pull them all via:
 # git submodule update --recursive --init
@@ -80,102 +36,65 @@ cd mxnet-ssd/mxnet
 cp make/config.mk ./config.mk
 # modify it if necessary
 ```
-Remember to enable CUDA if you want to be able to train, since CPU training is
-insanely slow. Using CUDNN is optional, but highly recommanded.
+  
+### Switch to `Flag25` branch
+The code has been written in `Flag25` branch. So please checkout that branch using:
+```
+git checkout -b Flag25
+git pull origin Flag25
+``` 
+The code to generate the specific type of data needed to produce results as shown in introduction above is present in `flags` folder.
 
-### Try the demo
-* Download the pretrained model: [`ssd_resnet50_0712.zip`](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.6/resnet50_ssd_512_voc0712_trainval.zip), and extract to `model/` directory.
-* Run
-```
-# cd /path/to/mxnet-ssd
-python demo.py --gpu 0
-# play with examples:
-python demo.py --epoch 0 --images ./data/demo/dog.jpg --thresh 0.5
-python demo.py --cpu --network resnet50 --data-shape 512
-# wait for library to load for the first time
-```
-* Check `python demo.py --help` for more options.
+### Trying the demo
+The example output image was run on VGG network for only 4 epochs. You will have to download this network's pretrained weight and symbol files from this [dropbox link](https://www.dropbox.com/sh/xv686xmciow5ns5/AADKFYVPHnTkpph7Lb-JdsdVa?dl=0). Paste the two files (without changing names) in `model` folder present in root directory of this repository. After that you can try the demo in three formats:
 
-### Train the model
-This example only covers training on Pascal VOC dataset. Other datasets should
-be easily supported by adding subclass derived from class `Imdb` in `dataset/imdb.py`.
-See example of `dataset/pascal_voc.py` for details.
-* Download the converted pretrained `vgg16_reduced` model [here](https://github.com/zhreshold/mxnet-ssd/releases/download/v0.2-beta/vgg16_reduced.zip), unzip `.param` and `.json` files
-into `model/` directory by default.
-* Download the PASCAL VOC dataset, skip this step if you already have one.
+* ### Pre-recorded Video
+To try out the pre-recorded video, run the following command:
 ```
-cd /path/to/where_you_store_datasets/
-wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
-wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
-wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
-# Extract the data.
-tar -xvf VOCtrainval_11-May-2012.tar
-tar -xvf VOCtrainval_06-Nov-2007.tar
-tar -xvf VOCtest_06-Nov-2007.tar
+python object_detection.py ./flags/demo_data/video/demo.mp4 --epoch=4
 ```
-* We are going to use `trainval` set in VOC2007/2012 as a common strategy.
-The suggested directory structure is to store `VOC2007` and `VOC2012` directories
-in the same `VOCdevkit` folder.
-* Then link `VOCdevkit` folder to `data/VOCdevkit` by default:
-```
-ln -s /path/to/VOCdevkit /path/to/this_example/data/VOCdevkit
-```
-Use hard link instead of copy could save us a bit disk space.
-* Create packed binary file for faster training:
-```
-# cd /path/to/mxnet-ssd
-bash tools/prepare_pascal.sh
-# or if you are using windows
-python tools/prepare_dataset.py --dataset pascal --year 2007,2012 --set trainval --target ./data/train.lst
-python tools/prepare_dataset.py --dataset pascal --year 2007 --set test --target ./data/val.lst --shuffle False
-```
-* Start training:
-```
-python train.py
-```
-* By default, this example will use `batch-size=32` and `learning_rate=0.004`.
-You might need to change the parameters a bit if you have different configurations.
-Check `python train.py --help` for more training options. For example, if you have 4 GPUs, use:
-```
-# note that a perfect training parameter set is yet to be discovered for multi-gpu
-python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.001
-```
-* Memory usage: MXNet is very memory efficient, training on `VGG16_reduced` model with `batch-size` 32 takes around 4684MB without CUDNN(conv1_x and conv2_x fixed).
+The above command will create another file named as `demo_output.mp4` present in same folder as input. You can test the output run on all the 25 flags in this [youtube video](https://www.youtube.com/watch?v=QC3GULk9ngU). I encourage you to go through [other options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/object_detection.py#L37) present in the command.
 
-### Evalute trained model
-Use:
+* ### Still Images
+Place all the images which you wish to run the network upon in a common folder containing no other files. Then run the following command:
 ```
-# cd /path/to/mxnet-ssd
-python evaluate.py --gpus 0,1 --batch-size 128 --epoch 0
+python object_detection.py ./flags/demo_data/images --epoch=4 --thresh=0.6 --plot-prob=0
 ```
-### Convert model to deploy mode
-This simply removes all loss layers, and attach a layer for merging results and non-maximum suppression.
-Useful when loading python symbol is not available.
+For each of the image present in the folder, it will create an `_output` file containing the predictions. I encourage you to go through [other options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/object_detection.py#L37) present in the command.
+
+* ### Live Feed Video
+At present, the live feed video isn't working properly. This is a work in progress at the moment but you are free to test the video feed directly. To try it, run the following command:
 ```
-# cd /path/to/mxnet-ssd
-python deploy.py --num-class 20
-# then you can run demo with new model without loading python symbol
-python demo.py --prefix model/ssd_300_deploy --epoch 0 --deploy
+python object_detection_app.py
 ```
 
-### Convert caffemodel
-Converter from caffe is available at `/path/to/mxnet-ssd/tools/caffe_converter`
+### Training your own network
+To train your own network, collect the 25 country flags you are interested in (and name the files with country names if you wish to generate label file as well) and place them in a common folder. Then run the following command.
+```
+cd flags
+python data_utils/preprocess.py <src_folder_path> <dst_folder_path> --create-label-file=1
+```
+The output folder will contain all the resized images at dimension of 224x144 pixels. Update the contents of your label names in this [class_names.txt file](https://github.com/Prasad9/Detect-Flags-SSD/blob/Flag25/flags/input_data/class_names.txt).
 
-This is specifically modified to handle custom layer in caffe-ssd. Usage:
-```
-cd /path/to/mxnet-ssd/tools/caffe_converter
-make
-python convert_model.py deploy.prototxt name_of_pretrained_caffe_model.caffemodel ssd_converted
-# you will use this model in deploy mode without loading from python symbol
-python demo.py --prefix ssd_converted --epoch 1 --deploy
-```
-There is no guarantee that conversion will always work, but at least it's good for now.
+Next you will have to download a dataset which mimics the best background situation you will have while you put your model for testing. I have used [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) which comprises of 2 lakh plus images of celebrity faces. Remember, you can't use CelebA dataset for commericial purposes. 
 
-### Legacy models
-Since the new interface for composing network is introduced, the old models have inconsistent names for weights.
-You can still load the previous model by rename the symbol to `legacy_xxx.py`
-and call with `python train/demo.py --network legacy_xxx `
-For example:
+Next, we are going to superimpose the flag files on these background images and add some random noise. You will get an output something like this after this step.
 ```
-python demo.py --network 'legacy_vgg16_ssd_300.py' --prefix model/ssd_300 --epoch 0
+python generate_data.py <flag_folder> <bg_img_folder>
 ```
+![Sample Dataset](https://user-images.githubusercontent.com/13696749/32447203-5f1137ac-c331-11e7-9dfd-30276afa83a6.png)
+
+Next, we have to generate the record file for training and validation. Run the following command.
+```
+python generate_rec.py
+```
+
+Now with the data ready, we can start the training procedure. Our base model can comprise of any model like VGG, Resnet, Inception etc. Whichever model you choose, download the weight and symbol file of that model trained on ImageNet from this MXNet models [website](http://data.mxnet.io/models/imagenet/). Place the downloaded files in `model` folder present in root directory. 
+
+Lastly, train your model.
+```
+cd ..
+python train.py 
+```
+Depending upon your network, epoch no, batch size etc, you may very well like to add extra options while training your network. Hence, I encourage you to look into the [various options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/train.py#L12) present while training.
+
