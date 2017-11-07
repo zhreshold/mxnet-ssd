@@ -1,8 +1,8 @@
-# SSD based Object Detection for Country Flags 
+# SSD based Object Detection for Country Flag Cards 
 
-This is an example of Object Detection done for country flags making use of SSD Network in MXNet Framework.
+This is an example of Object Detection done for country flag cards making use of SSD Network in MXNet Framework.
 
-You can read the detailed post about the approach used in this project in my [Medium post](--------------).
+You can read the detailed post about the approach used in this project in my [Medium post](https://medium.com/@prasad.pai/implementing-object-detection-in-machine-learning-for-flag-cards-with-mxnet-6bc276bb0b14).
 
 This repository is the forked version of [Zhreshold's MXNet-SSD](https://github.com/zhreshold/mxnet-ssd) which is a generic version of MXNet-SSD and some of the instructions of installation are copied from there.
 
@@ -45,7 +45,7 @@ To try out the pre-recorded video, run the following command:
 ```
 python object_detection.py ./flags/demo_data/video/demo.mp4 --epoch=4
 ```
-The above command will create another file named as `demo_output.mp4` present in same folder as input. You can test the output run on all the 25 flags in this [youtube video](https://www.youtube.com/watch?v=QC3GULk9ngU). I encourage you to go through [other options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/object_detection.py#L37) present in the command.
+The above command will create another file named as `demo_output.mp4` present in same folder as input. You can test the output run on all the 25 flag cards in this [youtube video](https://www.youtube.com/watch?v=QC3GULk9ngU). I encourage you to go through [other options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/object_detection.py#L37) present in the command.
 
 * ### Still Images
 Place all the images which you wish to run the network upon in a common folder containing no other files. Then run the following command:

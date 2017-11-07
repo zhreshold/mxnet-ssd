@@ -7,10 +7,9 @@ import numpy as np
 import tools.find_mxnet
 import mxnet as mx
 import sys
-from detect.image_detector import ImageDetector
-from detect.detector import Detector
-from symbol.symbol_factory import get_symbol
 
+from detect.image_detector import ImageDetector
+from symbol.symbol_factory import get_symbol
 from utils import WebcamVideoStream
 
 class_names = 'Argentina, Australia, Bhutan, Brazil, Canada, China, Cuba, France, Germany, Greece, India, \
