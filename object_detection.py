@@ -7,11 +7,12 @@ import numpy as np
 import tools.find_mxnet
 import mxnet as mx
 import sys
+
 from detect.image_detector import ImageDetector
-from detect.detector import Detector
 from symbol.symbol_factory import get_symbol
 
-from utils import WebcamVideoStream
+from moviepy.editor import VideoFileClip
+from tqdm import tqdm
 
 class_names = 'Argentina, Australia, Bhutan, Brazil, Canada, China, Cuba, France, Germany, Greece, India, \
  			   Kenya, Mexico, Norway, Portugal, Saudi Arabia, South Africa, Sri Lanka, Sweden, Thailand, \
@@ -34,7 +35,8 @@ def process_image(image_frame):
 	return detected_img
 
 def parse_args():
-	parser = argparse.ArgumentParser(description='Detect objects in the live video')
+	parser = argparse.ArgumentParser(description='Detect objects in the video or still images')
+	parser.add_argument('data_path', help = 'Path of video or folder containing images', type = str)
 	parser.add_argument('--network', dest='network', type=str, default='vgg16_reduced',
 						help='which network to use')
 	parser.add_argument('--epoch', dest='epoch', help='epoch of pretrained model',
@@ -61,13 +63,6 @@ def parse_args():
 						help='force non-maximum suppression on different class')
 	parser.add_argument('--has-gpu', dest='gpu', help='GPU device 1 if present else 0',
 						default=1, type=int)
-
-	parser.add_argument('-src', '--source', dest='video_source', type=int,
-						default=0, help='Device index of the camera.')
-	parser.add_argument('-wd', '--width', dest='width', type=int,
-						default=480, help='Width of the frames in the video stream.')
-	parser.add_argument('-ht', '--height', dest='height', type=int,
-						default=640, help='Height of the frames in the video stream.')
 	args = parser.parse_args()
 	return args
 
@@ -80,18 +75,26 @@ if __name__ == '__main__':
 	detector = get_detector(args.network, args.prefix, args.epoch, args.data_shape, color_subtract, ctx,
                             class_names, args.thresh, args.plot_prob, args.nms_thresh, args.force_nms)
 
-	video_capture = WebcamVideoStream(src=args.video_source,
-										width=args.width,
-										height=args.height).start()
+	data_path = os.path.abspath(args.data_path)
+	# For image processing
+	if os.path.isdir(data_path):
+		file_paths = os.listdir(data_path)
+		file_paths = [os.path.join(data_path, file_path) for file_path in file_paths]
+		
+		with tqdm(total = len(file_paths)) as pbar:
+			for file_path in file_paths:
+				image = cv2.imread(file_path, cv2.COLOR_BGR2RGB)
+				detected_image = process_image(image)
+				file_path_comp = file_path.split('.')
+				cv2.imwrite('{}_output.{}'.format(file_path_comp[0], file_path_comp[1]), detected_image)
 
-	while True:  
-		frame = video_capture.read()
-		detected_img = process_image(frame)
-		cv2.imshow('Video', detected_img)
-
-		if cv2.waitKey(1) & 0xFF == ord('q'):
-			break		
-
-	video_capture.stop()
-	cv2.destroyAllWindows()
-
+				pbar.update(1)
+	
+	# For video processing
+	else:
+		video_path_comp = data_path.split('.')
+		output_at = video_path_comp[0] + '_output.' + video_path_comp[1] 
+		clip1 = VideoFileClip(data_path)
+		
+		white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+		white_clip.write_videofile(output_at, audio=False)		

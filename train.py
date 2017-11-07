@@ -5,6 +5,10 @@ import os
 import sys
 from train.train_net import train_net
 
+country_names = 'Argentina, Australia, Bhutan, Brazil, Canada, China, Cuba, France, Germany, Greece, India,\
+                 Kenya, Mexico, Norway, Portugal, Saudi Arabia, South Africa, Sri Lanka, Sweden, Thailand, \
+                 Turkey, Ukraine, United Arab Emirates, United Kingdom, United States'
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a Single-shot detection network')
     parser.add_argument('--train-path', dest='train_path', help='train record to use',
@@ -65,14 +69,12 @@ def parse_args():
                         help='log network parameters every N iters if larger than 0')
     parser.add_argument('--pattern', dest='monitor_pattern', type=str, default=".*",
                         help='monitor parameter pattern, as regex')
-    parser.add_argument('--num-class', dest='num_class', type=int, default=20,
+    parser.add_argument('--num-class', dest='num_class', type=int, default=25,
                         help='number of classes')
     parser.add_argument('--num-example', dest='num_example', type=int, default=16551,
                         help='number of image examples')
     parser.add_argument('--class-names', dest='class_names', type=str,
-                        default='aeroplane, bicycle, bird, boat, bottle, bus, \
-                        car, cat, chair, cow, diningtable, dog, horse, motorbike, \
-                        person, pottedplant, sheep, sofa, train, tvmonitor',
+                        default = country_names,
                         help='string of comma separated names, or text filename')
     parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.45,
                         help='non-maximum suppression threshold')
