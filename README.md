@@ -36,17 +36,9 @@ cd mxnet-ssd/mxnet
 cp make/config.mk ./config.mk
 # modify it if necessary
 ```
-  
-### Switch to `Flag25` branch
-The code has been written in `Flag25` branch. So please checkout that branch using:
-```
-git checkout -b Flag25
-git pull origin Flag25
-``` 
-The code to generate the specific type of data needed to produce results as shown in introduction above is present in `flags` folder.
 
 ### Trying the demo
-The example output image was run on VGG network for only 4 epochs. You will have to download this network's pretrained weight and symbol files from this [dropbox link](https://www.dropbox.com/sh/xv686xmciow5ns5/AADKFYVPHnTkpph7Lb-JdsdVa?dl=0). Paste the two files (without changing names) in `model` folder present in root directory of this repository. After that you can try the demo in three formats:
+The example output image was run on VGG network for only 4 epochs. You will have to download this network's pretrained weight and symbol files from this [dropbox link](https://www.dropbox.com/s/qvu8q4nqm7z3k5u/VGG_SSD_Flags25_epoch4.zip?dl=0). Paste the two files (without changing names) in `model` folder present in root directory of this repository. After that you can try the demo in three formats:
 
 * ### Pre-recorded Video
 To try out the pre-recorded video, run the following command:
@@ -77,12 +69,13 @@ python data_utils/preprocess.py <src_folder_path> <dst_folder_path> --create-lab
 The output folder will contain all the resized images at dimension of 224x144 pixels. Update the contents of your label names in this [class_names.txt file](https://github.com/Prasad9/Detect-Flags-SSD/blob/Flag25/flags/input_data/class_names.txt).
 
 Next you will have to download a dataset which mimics the best background situation you will have while you put your model for testing. I have used [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) which comprises of 2 lakh plus images of celebrity faces. Remember, you can't use CelebA dataset for commericial purposes. 
+As these background image dataset is very likely to contain large number of images, I have optimised the code a bit and set the number of images in the dataset in [generate_data.py](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/flags/generate_data.py#L14). 
 
 Next, we are going to superimpose the flag files on these background images and add some random noise. You will get an output something like this after this step.
 ```
 python generate_data.py <flag_folder> <bg_img_folder>
 ```
-![Sample Dataset](https://user-images.githubusercontent.com/13696749/32447203-5f1137ac-c331-11e7-9dfd-30276afa83a6.png)
+![Sample Dataset](https://user-images.githubusercontent.com/13696749/32482145-5ec559c8-c3bc-11e7-942f-78c36b7adbea.png)
 
 Next, we have to generate the record file for training and validation. Run the following command.
 ```

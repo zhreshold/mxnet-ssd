@@ -142,6 +142,8 @@ if __name__ == "__main__":
 	label_file_names, labels = get_filenames_and_labels(args.flag_folder)
 	label_file_names, labels = shuffle(label_file_names, labels)
 
+    # 1 and 190000 corresponds to from which image index you are referring to in background image dataset
+    # total_base_images values of 120000 and 10000 correspond to total number of images you would like to generate
 	generate_image_pipeline(label_file_names, labels, args.save_folder, TRAIN_FOLDER, args.bg_img_folder,
 							1, total_base_images = 120000)
 	generate_image_pipeline(label_file_names, labels, args.save_folder, VAL_FOLDER, args.bg_img_folder,
