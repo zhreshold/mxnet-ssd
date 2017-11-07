@@ -2,7 +2,7 @@
 
 This is an example of Object Detection done for country flags making use of SSD Network in MXNet Framework.
 
-You can read the detailed post about the approach used in this project in my [Medium post](--------------).
+You can read the detailed post about the approach used in this project in my [Medium post](https://medium.com/@prasad.pai/implementing-object-detection-in-machine-learning-for-flag-cards-with-mxnet-6bc276bb0b14).
 
 This repository is the forked version of [Zhreshold's MXNet-SSD](https://github.com/zhreshold/mxnet-ssd) which is a generic version of MXNet-SSD and some of the instructions of installation are copied from there.
 
