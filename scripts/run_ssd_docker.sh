@@ -4,6 +4,7 @@ nvidia-docker run -it --rm \
 -e MXNET_CUDNN_AUTOTUNE_DEFAULT=0 \
 -v /home/oper/Datasets:/root/mxnet-ssd/data \
 -v /home/oper/david/mxnet-ssd/model:/root/mxnet-ssd/model \
+-v /home/oper/david/mxnet-ssd/config:/root/mxnet-ssd/config \
 -v /home/oper/david/mxnet-ssd/output:/root/mxnet-ssd/output \
 -v /home/oper/david/mxnet-ssd/dataset:/root/mxnet-ssd/dataset \
 -v /home/oper/david/mxnet-ssd/train:/root/mxnet-ssd/train \
@@ -16,4 +17,4 @@ nvidia-docker run -it --rm \
 -v /home/oper/david/mxnet-ssd/evaluate.py:/root/mxnet-ssd/evaluate.py \
 -v /home/oper/david/mxnet-ssd/train.py:/root/mxnet-ssd/train.py \
 -v /home/oper/david/mxnet-ssd/demo.py:/root/mxnet-ssd/demo.py \
-mxnet/ssd:cuda8.0_cudnn5.1
+mxnet/ssd:gpu_0.12.0_cuda9

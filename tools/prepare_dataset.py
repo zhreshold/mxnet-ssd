@@ -96,9 +96,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    if args.class_names is None:
-        args.target = os.path.join(curr_path, '..', 'train.lst')
-    else:
+    if args.class_names is not None:
         assert args.target is not None, 'for a subset of classes, specify a target path. Its for your own safety'
     if args.dataset == 'pascal':
         db = load_pascal(args.set, args.year, args.root_path, args.shuffle, args.class_names, args.true_negative)

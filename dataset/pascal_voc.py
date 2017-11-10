@@ -36,7 +36,7 @@ class PascalVoc(Imdb):
         self.true_negative_images = true_negative_images
 
         if class_names is not None:
-            self.classes = class_names.replace(' ', '').split(',')
+            self.classes = class_names.strip().split(',')
         else:
             self.classes = self._load_class_names(names,
                 os.path.join(os.path.dirname(__file__), 'names'))
