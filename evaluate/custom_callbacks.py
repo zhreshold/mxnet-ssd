@@ -17,7 +17,7 @@ class ParseLogCallback(object):
     Currently - does not support resume training..
     """
     def __init__(self, dist_logging_dir=None, scalar_logging_dir=None,
-                 logfile_path=None, batch_size=None, iter_monitor=None,
+                 logfile_path=None, batch_size=None, iter_monitor=0,
                  frequent=None, prefix='ssd'):
         self.scalar_logging_dir = scalar_logging_dir
         self.dist_logging_dir = dist_logging_dir
@@ -39,7 +39,7 @@ class ParseLogCallback(object):
         """Callback to parse a log file and and add params to TensorBoard."""
 
         # save distributions from the monitor output log
-        if self.iter_monitor is not None and self.batch % self.iter_monitor == 0:
+        if not self.iter_monitor == 0 and self.batch % self.iter_monitor == 0:
             with open(self.logfile_path) as fp:
                 for i in range(self.line_idx):
                     fp.next()

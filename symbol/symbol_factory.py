@@ -33,7 +33,7 @@ def get_scales(min_scale=0.2, max_scale=0.9,num_layers=6):
     for ratio in xrange(min_ratio, max_ratio + 1, step):
         min_sizes.append(ratio / 100.)
         max_sizes.append((ratio + step) / 100.)
-    min_sizes = [min_scale / 2.0] + min_sizes
+    min_sizes = [int(100*min_scale / 2.0) / 100.0] + min_sizes
     max_sizes = [min_scale] + max_sizes
 
     # convert it back to this implementation's notation:
@@ -130,13 +130,13 @@ def get_config(network, data_shape, **kwargs):
         steps = []
         return locals()
     elif network == 'mobilenet':
-        from_layers = ['activation22', 'activation26', '', '', '', '']
-        num_filters = [-1, -1, 512, 256, 256, 128]
-        strides = [-1, -1, 2, 2, 2, 2]
-        pads = [-1, -1, 1, 1, 1, 1]
-        sizes = get_scales(min_scale=0.2, max_scale=0.9, num_layers=len(from_layers))
+        from_layers = ['conv_12_relu', 'conv_14_relu', '', '', '', '', '']
+        num_filters = [-1, -1, 512, 256, 256, 256, 256]
+        strides = [-1, -1, 2, 2, 2, 2, 2]
+        pads = [-1, -1, 1, 1, 1, 1, 1]
+        sizes = get_scales(min_scale=0.15, max_scale=0.9, num_layers=len(from_layers))
         ratios = [[1,2,.5], [1,2,.5,3,1./3], [1,2,.5,3,1./3], [1,2,.5,3,1./3], \
-            [1,2,.5], [1,2,.5]]
+                  [1,2,.5,3,1./3], [1,2,.5], [1,2,.5]]
         normalizations = -1
         steps = []
         return locals()
