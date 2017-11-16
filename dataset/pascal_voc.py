@@ -77,8 +77,8 @@ class PascalVoc(Imdb):
         self object with filtered information
         """
 
-        # filter images with 'ignore' labels
-        self.labels = [f[f[:, 0] >= 0, :] for f in self.labels]
+        # filter images that do not have any of the specified classes
+        self.labels = [f[np.logical_and(f[:, 0] >= 0, f[:, 0] <= self.num_classes-1), :] for f in self.labels]
         # find indices of images with ground-truth labels
         gt_indices = [idx for idx, f in enumerate(self.labels) if not f.size == 0]
 
