@@ -25,6 +25,8 @@ remarkable traits of MXNet.
 * Monitor validation mAP during training.
 * More network symbols under development and test.
 * Extra operators are now in `mxnet/src/operator/contrib`, symbols are modified. Please use [Release-v0.2-beta](https://github.com/zhreshold/mxnet-ssd/releases/tag/v0.2-beta) for old models.
+* added Docker support for this repository, prebuilt & including all packages and dependencies. (linux only)
+* added tensorboard support, allowing a more convenient way of research. (linux only)
 
 ### Demo results
 ![demo1](https://cloud.githubusercontent.com/assets/3307514/19171057/8e1a0cc4-8be0-11e6-9d8f-088c25353b40.png)
@@ -56,6 +58,11 @@ remarkable traits of MXNet.
 *Forward time only, data loading and drawing excluded.*
 
 ### Getting started
+* Option #1 - install using 'Docker'. if you are not familiar with this technology, there is a 'Docker' section below.
+you can get the latest image:
+```
+docker pull daviddocker78:mxnet-ssd:gpu_0.12.0_cuda9
+```
 * You will need python modules: `cv2`, `matplotlib` and `numpy`.
 If you use mxnet-python api, you probably have already got them.
 You can install them via pip or package manegers, such as `apt-get`:
@@ -179,3 +186,52 @@ For example:
 ```
 python demo.py --network 'legacy_vgg16_ssd_300.py' --prefix model/ssd_300 --epoch 0
 ```
+
+### Docker 
+First make sure [docker](https://docs.docker.com/engine/installation/) is
+installed. The docker plugin
+[nvidia-docker](https://github.com/NVIDIA/nvidia-docker) is required to run on
+Nvidia GPUs.
+
+* pre-built docker images are available at https://hub.docker.com/r/daviddocker78/mxnet-ssd/
+to download a pre-built image, run:
+```
+docker pull daviddocker78/mxnet-ssd:gpu_0.12.0_cuda9
+```
+Otherwise, if you wish to build it yourself, you have the Dockerfiles available in this repo, under the 'docker' folder.
+* to run a container instance:
+```
+nvidia-docker run -it --rm myImageName:tag
+```
+now you can execute commands the same way as you would, if you'd install mxnet on your own computer.
+for more information, see the [Guide](docker/README.md).
+
+### Tensorboard
+* There has been some great effort to bring tensorboard to mxnet.
+If you chose to work with dockers, you have it installed in the pre-built image you've downloaded. otherwise, follow [here](https://github.com/dmlc/tensorboard) for installation steps.
+* To save training loss graphs, validation AP per class, and validation ROC graphs to tensorboard while training, you can specify:
+```
+python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.001 --tensorboard True
+```
+* To save also the distributions of layers (actually, the variance of them), you can specify:
+```
+python train.py --gpus 0,1,2,3 --batch-size 128 --lr 0.001 --tensorboard True --monitor 40
+```
+* Visualization with Docker: the UI of tensorboard has changed over time. to get the best experience, download the new tensorflow docker-image:
+```
+# download the built image from Dockerhub
+docker pull tensorflow/tensorflow:1.4.0-devel-gpu
+# run a container and open a port using '-p' flag. 
+# attach a volume from where you stored your logs, to a directory inside the container
+nvidia-docker run -it --rm -p 0.0.0.0:6006:6006 -v /my/full/experiment/path:/res tensorflow/tensorflow:1.4.0-devel-gpu
+cd /res
+tensorboard --logdir=.
+```
+To launch tensorboard without docker, simply run the last command
+Now tensorboard is loading the tensorEvents of your experiment. open your browser under '0.0.0.0:6006' and you will have tensorboard!
+
+### Tensorboard visualizations
+![loss](https://user-images.githubusercontent.com/12379769/32689844-5e26ca0c-c6f4-11e7-9a09-a63da1a53b43.PNG)
+![AP](https://user-images.githubusercontent.com/12379769/32689857-89aa967c-c6f4-11e7-8c2b-6ebce88467b4.PNG)
+![ROC](https://user-images.githubusercontent.com/12379769/32689860-ada24e44-c6f4-11e7-99b7-75c78db4025d.PNG)
+
