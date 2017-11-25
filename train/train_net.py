@@ -10,7 +10,7 @@ from train.metric import MultiBoxMetric
 from evaluate.eval_metric import MApMetric, VOC07MApMetric
 from config.config import cfg
 from symbol.symbol_factory import get_symbol_train
-from evaluate.custom_callbacks import LogDistributionsCallback, LogROCCallback, ParseLogCallback
+from evaluate.custom_callbacks import LogDistributionsCallback, LogROCCallback, ParseLogCallback, LogDetectionsCallback
 from tools.visualize_net import net_visualization
 
 def convert_pretrained(name, args):
@@ -294,6 +294,7 @@ def train_net(network, train_path, num_classes, batch_size,
             os.makedirs(os.path.join(tensorboard_dir, 'train', 'dist'))
             os.makedirs(os.path.join(tensorboard_dir, 'val', 'roc'))
             os.makedirs(os.path.join(tensorboard_dir, 'val', 'scalar'))
+            os.makedirs(os.path.join(tensorboard_dir, 'val', 'images'))
         batch_end_callback.append(
             ParseLogCallback(dist_logging_dir=os.path.join(tensorboard_dir, 'train', 'dist'),
                              scalar_logging_dir=os.path.join(tensorboard_dir, 'train', 'scalar'),
@@ -304,6 +305,9 @@ def train_net(network, train_path, num_classes, batch_size,
         eval_end_callback.append(LogROCCallback(logging_dir=os.path.join(tensorboard_dir, 'val/roc'),
                                                 roc_path=os.path.join(os.path.dirname(prefix), 'roc'),
                                                 class_names=class_names))
+        eval_end_callback.append(LogDetectionsCallback(logging_dir=os.path.join(tensorboard_dir, 'val/images'),
+                                                       images_path=os.path.join(os.path.dirname(prefix), 'images'),
+                                                       class_names=class_names,batch_size=batch_size,mean_pixels=mean_pixels))
 
     # this callback should be the last in a serie of batch_callbacks
     # since it is resetting the metric evaluation every $frequent batches

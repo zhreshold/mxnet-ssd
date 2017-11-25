@@ -2,7 +2,8 @@ import logging
 import os
 import scipy.misc
 import numpy as np
-
+import random
+import matplotlib.pyplot as plt
 
 class ParseLogCallback(object):
     """
@@ -93,6 +94,126 @@ class LogROCCallback(object):
                 continue
             im = scipy.misc.imread(roc)
             self.summary_writer.add_image(self.prefix+'_'+class_name, im)
+
+class LogDetectionsCallback(object):
+    """ TODO complete
+    """
+    def __init__(self, logging_dir=None, prefix='val', images_path=None,
+                 class_names=None, batch_size=None, mean_pixels=None, det_thresh=0.5):
+
+        self.logging_dir = logging_dir
+        self.prefix = prefix
+        if not os.path.exists(images_path):
+            os.mkdir(images_path)
+        self.images_path = images_path
+        self.class_names = class_names
+        self.batch_size = batch_size
+        self.mean_pixels = mean_pixels
+        self.det_thresh = det_thresh
+        try:
+            from tensorboard import SummaryWriter
+            self.summary_writer = SummaryWriter(logging_dir)
+        except ImportError:
+            logging.error('You can install tensorboard via `pip install tensorboard`.')
+
+    def __call__(self, param):
+        """Callback to log detections and gt-boxes as an image in TensorBoard."""
+        if param.locals is None:
+            return
+
+        result = []
+        pad = param.locals['eval_batch'].pad
+        images = param.locals['eval_batch'].data[0][0:self.batch_size-pad].asnumpy()
+        labels = param.locals['eval_batch'].label[0][0:self.batch_size - pad].asnumpy()
+        outputs = [out[0:out.shape[0] - pad] for out in param.locals['self'].get_outputs()]
+        detections = outputs[3].asnumpy()
+        for i in range(detections.shape[0]):
+            det = detections[i, :, :]
+            det = det[np.where(det[:, 0] >= 0)[0]]
+            label = labels[i,:,:]
+            label = label[np.where(label[:, 0] >= 0)[0]]
+            img = images[i,:,:,:] + np.reshape(self.mean_pixels, (3,1,1))
+            img = img.astype(np.uint8)
+            img = img.transpose([1,2,0])
+            img[:, :, (0, 1, 2)] = img[:, :, (2, 1, 0)]
+            self._visualize_detection_and_labels(img, det, label=label,
+                                                 classes=self.class_names, thresh=self.det_thresh,
+                                                 plt_path=os.path.join(self.images_path, 'image'+str(i)+'.png'))
+            # save to tensorboard
+            img_det_graph = scipy.misc.imread(os.path.join(self.images_path, 'image'+str(i)+'.png'))
+            self.summary_writer.add_image('image'+str(i)+'.png', img_det_graph)
+        return result
+
+    def _visualize_detection_and_labels(self, img, dets, label, classes=[], thresh=None, plt_path=None):
+        """
+        visualize detections in one image
+
+        Parameters:
+        ----------
+        img : numpy.array
+            image, in bgr format
+        dets : numpy.array
+            ssd detections, numpy.array([[id, score, x1, y1, x2, y2]...])
+            each row is one object
+        classes : tuple or list of str
+            class names
+        thresh : float
+            score threshold
+        """
+        fig = plt.figure()
+        plt.imshow(img)
+        height = img.shape[0]
+        width = img.shape[1]
+        colors = dict()
+        # Visualize ground-truth boxes
+        gt_color = (1.0, 0.0, 0.0)
+        for i in range(label.shape[0]):
+            cls_id = int(dets[i, 0])
+            if cls_id >= 0:
+                xmin = int(label[i, 1] * width)
+                ymin = int(label[i, 2] * height)
+                xmax = int(label[i, 3] * width)
+                ymax = int(label[i, 4] * height)
+                rect = plt.Rectangle((xmin, ymin), xmax - xmin,
+                                     ymax - ymin, fill=False,
+                                     edgecolor=gt_color,
+                                     linewidth=2)
+                plt.gca().add_patch(rect)
+                class_name = str(cls_id)
+                if classes and len(classes) > cls_id:
+                    class_name = classes[cls_id]
+                plt.gca().text(xmin, ymin - 2,
+                               'gt',
+                               bbox=dict(facecolor=gt_color, alpha=0.5),
+                               fontsize=8, color='white')
+        # visualize predictions
+        for i in range(dets.shape[0]):
+            cls_id = int(dets[i, 0])
+            if cls_id >= 0:
+                score = dets[i, 1]
+                if score > thresh:
+                    if cls_id not in colors:
+                        colors[cls_id] = (random.random(), random.random(), random.random())
+                    xmin = int(dets[i, 2] * width)
+                    ymin = int(dets[i, 3] * height)
+                    xmax = int(dets[i, 4] * width)
+                    ymax = int(dets[i, 5] * height)
+                    rect = plt.Rectangle((xmin, ymin), xmax - xmin,
+                                         ymax - ymin, fill=False,
+                                         edgecolor=colors[cls_id],
+                                         linewidth=3.5)
+                    plt.gca().add_patch(rect)
+                    class_name = str(cls_id)
+                    if classes and len(classes) > cls_id:
+                        class_name = classes[cls_id]
+                    plt.gca().text(xmin, ymin - 2,
+                                    '{:s} {:.3f}'.format(class_name, score),
+                                    bbox=dict(facecolor=colors[cls_id], alpha=0.5),
+                                    fontsize=8, color='white')
+        plt.savefig(plt_path)
+        plt.close(fig)
+
+
 
 class LogDistributionsCallback(object):
     """
