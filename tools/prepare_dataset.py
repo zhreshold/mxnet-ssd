@@ -2,6 +2,7 @@ from __future__ import print_function
 import sys, os
 import argparse
 import subprocess
+import mxnet
 curr_path = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(os.path.join(curr_path, '..'))
 from dataset.pascal_voc import PascalVoc
@@ -105,8 +106,8 @@ if __name__ == '__main__':
 
     print("List file {} generated...".format(args.target))
 
-    subprocess.check_call(["python",
-        os.path.join(curr_path, "..", "mxnet/tools/im2rec.py"),
+    im2rec_path = os.path.join(os.path.dirname(mxnet.__file__), 'tools/im2rec.py')
+    subprocess.check_call(["python", im2rec_path,
         os.path.abspath(args.target), os.path.abspath(args.root_path),
         "--shuffle", str(int(args.shuffle)), "--pack-label", "1"])
 
