@@ -1,6 +1,6 @@
 """Presets for various network configurations"""
 import logging
-import symbol_builder
+from symbol import symbol_builder
 import numpy as np
 
 def get_scales(min_scale=0.2, max_scale=0.9,num_layers=6):
@@ -38,7 +38,7 @@ def get_scales(min_scale=0.2, max_scale=0.9,num_layers=6):
 
     # convert it back to this implementation's notation:
     scales = []
-    for layer_idx in xrange(num_layers):
+    for layer_idx in range(num_layers):
         scales.append([min_sizes[layer_idx], np.single(np.sqrt(min_sizes[layer_idx] * max_sizes[layer_idx]))])
     return scales
 

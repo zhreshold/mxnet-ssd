@@ -126,7 +126,12 @@ class LogDetectionsCallback(object):
         images = param.locals['eval_batch'].data[0][0:self.batch_size-pad].asnumpy()
         labels = param.locals['eval_batch'].label[0][0:self.batch_size - pad].asnumpy()
         outputs = [out[0:out.shape[0] - pad] for out in param.locals['self'].get_outputs()]
-        detections = outputs[3].asnumpy()
+        # 'det' variable can be in different positions depending with train/test symbols
+        if len(outputs) > 1:
+            det_idx = [idx for idx,f in enumerate(param.locals['self'].output_names) if f.startswith('det')][0]
+            detections = outputs[det_idx].asnumpy()
+        else:
+            detections = outputs[0].asnumpy()
         for i in range(detections.shape[0]):
             det = detections[i, :, :]
             det = det[np.where(det[:, 0] >= 0)[0]]
@@ -168,7 +173,7 @@ class LogDetectionsCallback(object):
         # Visualize ground-truth boxes
         gt_color = (1.0, 0.0, 0.0)
         for i in range(label.shape[0]):
-            cls_id = int(dets[i, 0])
+            cls_id = int(label[i, 0])
             if cls_id >= 0:
                 xmin = int(label[i, 1] * width)
                 ymin = int(label[i, 2] * height)

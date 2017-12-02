@@ -192,6 +192,11 @@ def train_net(network, train_path, num_classes, batch_size,
     checkpoint_period : int
         a checkpoint will be saved every "checkpoint_period" epochs
     """
+    # check actual number of train_images
+    if os.path.exists(train_path.replace('rec','idx')):
+        with open(train_path.replace('rec','idx'), 'r') as f:
+            txt = f.readlines()
+        num_example = len(txt)
     # set up logger
     logging.basicConfig()
     logger = logging.getLogger()
@@ -199,7 +204,7 @@ def train_net(network, train_path, num_classes, batch_size,
     if log_file:
         log_file_path = os.path.join(os.path.dirname(prefix), log_file)
         if not os.path.exists(os.path.dirname(log_file_path)):
-            os.mkdir(os.path.dirname(log_file_path))
+            os.makedirs(os.path.dirname(log_file_path))
         fh = logging.FileHandler(log_file_path)
         logger.addHandler(fh)
 
@@ -274,9 +279,11 @@ def train_net(network, train_path, num_classes, batch_size,
     if fixed_param_names:
         logger.info("Freezed parameters: [" + ','.join(fixed_param_names) + ']')
 
-    # visualize net
+    # visualize net - both train and test
     net_visualization(net=net, network=network,data_shape=data_shape[2],
                       output_dir=os.path.dirname(prefix), train=True)
+    net_visualization(net=None, network=network, data_shape=data_shape[2],
+                      output_dir=os.path.dirname(prefix), train=False, num_classes=num_classes)
 
     # init training module
     mod = mx.mod.Module(net, label_names=('label',), logger=logger, context=ctx,
