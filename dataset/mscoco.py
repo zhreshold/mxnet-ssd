@@ -107,7 +107,7 @@ class Coco(Imdb):
 
         if shuffle:
             import random
-            indices = range(len(image_set_index))
+            indices = list(range(len(image_set_index)))
             random.shuffle(indices)
             image_set_index = [image_set_index[i] for i in indices]
             labels = [labels[i] for i in indices]
