@@ -45,14 +45,14 @@ To try out the pre-recorded video, run the following command:
 ```
 python object_detection.py ./flags/demo_data/video/demo.mp4 --epoch=4
 ```
-The above command will create another file named as `demo_output.mp4` present in same folder as input. You can test the output run on all the 25 flag cards in this [youtube video](https://www.youtube.com/watch?v=QC3GULk9ngU). I encourage you to go through [other options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/object_detection.py#L37) present in the command.
+The above command will create another file named as `demo_output.mp4` present in same folder as input. You can test the output run on all the 25 flag cards in this [youtube video](https://www.youtube.com/watch?v=QC3GULk9ngU). I encourage you to go through [other options](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/object_detection.py#L37) present in the command.
 
 * ### Still Images
 Place all the images which you wish to run the network upon in a common folder containing no other files. Then run the following command:
 ```
 python object_detection.py ./flags/demo_data/images --epoch=4 --thresh=0.6 --plot-prob=0
 ```
-For each of the image present in the folder, it will create an `_output` file containing the predictions. I encourage you to go through [other options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/object_detection.py#L37) present in the command.
+For each of the image present in the folder, it will create an `_output` file containing the predictions. I encourage you to go through [other options](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/object_detection.py#L37) present in the command.
 
 * ### Live Feed Video
 At present, the live feed video isn't working properly. This is a work in progress at the moment but you are free to test the video feed directly. To try it, run the following command:
