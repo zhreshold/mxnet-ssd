@@ -50,7 +50,7 @@ if __name__ == "__main__":
 		subprocess.check_call(["python",
 			os.path.join(curr_path, "../mxnet/tools/im2rec.py"),
 			os.path.abspath(lst_path), os.path.abspath(image_path),
-			"--shuffle", str(1), "--pack-label", "1"])
+			"--pack-label"])
 
 		file_name = list_save_name.split('.')[0]
 		print("Record file {} generated...".format(file_name + '.rec'))
