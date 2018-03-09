@@ -71,10 +71,10 @@ To train your own network, collect the 25 country flags you are interested in (a
 cd flags
 python data_utils/preprocess.py <src_folder_path> <dst_folder_path> --create-label-file=1
 ```
-The output folder will contain all the resized images at dimension of 224x144 pixels. Update the contents of your label names in this [class_names.txt file](https://github.com/Prasad9/Detect-Flags-SSD/blob/Flag25/flags/input_data/class_names.txt).
+The output folder will contain all the resized images at dimension of 224x144 pixels. Update the contents of your label names in this [class_names.txt file](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/flags/input_data/class_names.txt) if you have not generated label file automatically (Arrange labels alphabetically).  
 
 Next you will have to download a dataset which mimics the best background situation you will have while you put your model for testing. I have used [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) which comprises of 2 lakh plus images of celebrity faces. Remember, you can't use CelebA dataset for commericial purposes. 
-As these background image dataset is very likely to contain large number of images, I have optimised the code a bit and set the number of images in the dataset in [generate_data.py](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/flags/generate_data.py#L14). 
+As these background image dataset is very likely to contain large number of images, I have optimised the code a bit and set the number of images in the dataset in [constants.py](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/flags/data_utils/constants.py#L13). 
 
 Next, we are going to superimpose the flag files on these background images and add some random noise. You will get an output something like this after this step.
 ```
@@ -94,4 +94,4 @@ Lastly, train your model.
 cd ..
 python train.py 
 ```
-Depending upon your network, epoch no, batch size etc, you may very well like to add extra options while training your network. Hence, I encourage you to look into the [various options](https://github.com/Prasad9/mxnet-ssd/blob/Flag25/train.py#L12) present while training.
+Depending upon your network, epoch no, batch size etc, you may very well like to add extra options while training your network. Hence, I encourage you to look into the [various options](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/train.py#L12) present while training.

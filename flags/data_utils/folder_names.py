@@ -1,6 +1,0 @@
-XML_FOLDER = 'Annotations'
-GENERATED_DATA = 'GeneratedData'
-TRAIN_FOLDER = 'Train'
-VAL_FOLDER = 'Val'
-TEST_FOLDER = 'Test'
-LABEL = 'Label'

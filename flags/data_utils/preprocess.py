@@ -5,44 +5,45 @@ import os
 import argparse
 import shutil
 
-from write_xml_file import write_xml_file
+from tqdm import tqdm
+from constants import FLAG_HEIGHT, FLAG_WIDTH
 
-FLAG_HEIGHT = 144
-FLAG_WIDTH = 224
-
-def tf_resize_images(img, image_width, image_height):
-	tf.reset_default_graph()
-	tf_img = tf.image.resize_images(img, (image_height, image_width),
-								tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-	with tf.Session() as sess:
-		sess.run(tf.global_variables_initializer())
-		resized_img = sess.run(tf_img)
-	return resized_img
-
+def is_file_png(img_path):
+	return os.path.splitext(img_path)[1] == '.png'
 
 def base_resize_images(src_folder, dest_folder):
 	shutil.rmtree(dest_folder, ignore_errors = True)
 	os.mkdir(dest_folder)
-
 	flag_files = os.listdir(src_folder)
-	resize_batch_size = 32
-	for offset in range(0, len(flag_files), resize_batch_size):
-		batch_file_names = flag_files[offset: offset + resize_batch_size]
-		batch_files = []
-		for file_name in batch_file_names:
-			file_path = os.path.join(src_folder, file_name)
-			img = mpimg.imread(file_path)[:, :, :3]
-			batch_files.append(img)
-		batch_files = np.array(batch_files)
 
-		batch_files = tf_resize_images(batch_files, FLAG_WIDTH, FLAG_HEIGHT)
-		for file_name, file in zip(batch_file_names, batch_files):
-			file_path = os.path.join(dest_folder, file_name)
-			mpimg.imsave(file_path, file)
+	tf.reset_default_graph()
+	img_placeholder = tf.placeholder(tf.float32, (None, None, 3))
+	tf_img = tf.image.resize_images(img_placeholder, (FLAG_HEIGHT, FLAG_WIDTH),
+								tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+	with tf.Session() as sess:
+		sess.run(tf.global_variables_initializer())
 
+		with tqdm(total = len(flag_files))  as pbar:
+			for file_name in flag_files:
+				file_path = os.path.abspath(os.path.join(src_folder, file_name))
+				img = mpimg.imread(file_path)[:, :, :3]
+				# Jpeg images are read as uint type with data lying from 0 to 255
+				# Convert them into float with values from 0.0 to 1.0
+				if not is_file_png(file_path):
+					img = img / 255.0
+				resized_img = sess.run(tf_img, feed_dict = {img_placeholder: img})
+
+				file_base_name = os.path.basename(file_name).split('.')[0]
+				save_path = os.path.abspath(os.path.join(dest_folder, file_base_name + '.png'))
+				mpimg.imsave(save_path, resized_img)
+
+				pbar.update(1)
+
+	return
+	
 def create_label_file(dest_folder):
 	dest_path = os.path.abspath(dest_folder)
-	country_name_file = os.path.join(dest_path, '..', 'class_names.txt')
+	country_name_file = os.path.abspath(os.path.join(dest_path, '..', 'class_names.txt'))
 
 	files = os.listdir(dest_path)
 	files = ['{}\n'.format(file.split('.')[0]) for file in files]
@@ -51,6 +52,7 @@ def create_label_file(dest_folder):
 	with open(country_name_file, mode = 'w') as label_file:
 		for country_name in files:
 			label_file.write(country_name)
+	return country_name_file
 
 def parse_args():
 	# Make sure the file names are the country names preferrably without any spaces.
@@ -68,6 +70,8 @@ if __name__ == "__main__":
 	args = parse_args()
 
 	base_resize_images(args.src_folder, args.dest_folder)
-	
+	print('Resizing of flag image is complete')
+
 	if args.create_label == 1:
-		create_label_file(args.dest_folder)
+		label_path = create_label_file(args.dest_folder)
+		print('Label file has been created at {}'.format(label_path))

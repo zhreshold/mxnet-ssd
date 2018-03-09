@@ -8,21 +8,12 @@ import shutil
 import random
 
 from data_utils.operations import tf_generate_images, write_label_file_entries
-from data_utils.folder_names import XML_FOLDER, GENERATED_DATA, TRAIN_FOLDER, VAL_FOLDER, TEST_FOLDER, LABEL
-
-# There are 202599 images in my CelebA dataset. Give this value appropriately.
-CELEBA_TOTAL_FILES = 202599     # Directly hardcoded to save memory
+# Not doing import * but doing manually. Instead make it a class
+from data_utils.constants import XML_FOLDER, GENERATED_DATA, TRAIN_FOLDER, VAL_FOLDER, TEST_FOLDER, LABEL
+from data_utils.constants import FLAG_HEIGHT, FLAG_WIDTH, MIN_FLAGS, MAX_FLAGS
+from data_utils.constants import CELEBA_TOTAL_FILES, BORDER_WHITE_AREA
 
 BATCH_SIZE = 16
-
-MIN_FLAGS = 1
-MAX_FLAGS = 2  # Currently supports upto 2 Maximum flags in one image. 
-
-BORDER_WHITE_AREA = 40 # How much percent of card should be covered with white area.
-
-# Dimensions of the raw flag height and width
-FLAG_HEIGHT = 144
-FLAG_WIDTH = 224
 
 def get_filenames_and_labels(flag_path):
     flag_file_names = os.listdir(flag_path)

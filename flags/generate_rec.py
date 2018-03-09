@@ -3,7 +3,7 @@ import sys, os
 import argparse
 import subprocess
 
-from data_utils.folder_names import TRAIN_FOLDER, VAL_FOLDER, GENERATED_DATA, XML_FOLDER
+from data_utils.constants import TRAIN_FOLDER, VAL_FOLDER, GENERATED_DATA, XML_FOLDER
 from rec_data_utils.flags_celeba import FlagsCeleba
 
 def load_flags(image_path, annotation_path, class_name_path, shuffle = True):
