@@ -5,9 +5,10 @@ import os
 import sys
 from train.train_net import train_net
 
-country_names = 'Argentina, Australia, Bhutan, Brazil, Canada, China, Cuba, France, Germany, Greece, India,\
-                 Kenya, Mexico, Norway, Portugal, Saudi Arabia, South Africa, Sri Lanka, Sweden, Thailand, \
-                 Turkey, Ukraine, United Arab Emirates, United Kingdom, United States'
+def get_country_names():
+    with open('./flags/input_data/class_names.txt', 'r') as fid:
+        country_names = [country_name.strip() for country_name in fid.readlines() if len(country_name) > 0]
+    return country_names
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a Single-shot detection network')
@@ -71,13 +72,11 @@ def parse_args():
                         help='log network parameters every N iters if larger than 0')
     parser.add_argument('--pattern', dest='monitor_pattern', type=str, default=".*",
                         help='monitor parameter pattern, as regex')
-    parser.add_argument('--num-class', dest='num_class', type=int, default=25,
-                        help='number of classes')
     parser.add_argument('--num-example', dest='num_example', type=int, default=16551,
                         help='number of image examples')
     parser.add_argument('--class-names', dest='class_names', type=str,
-                        default = country_names,
-                        help='string of comma separated names, or text filename')
+                        default = get_country_names(), # country_names,
+                        help='Read the labels present in ./flags/input_data/class_names.txt')
     parser.add_argument('--nms', dest='nms_thresh', type=float, default=0.45,
                         help='non-maximum suppression threshold')
     parser.add_argument('--nms_topk', dest='nms_topk', type=int, default=400,
@@ -98,33 +97,17 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def parse_class_names(args):
-    """ parse # classes and class_names if applicable """
-    num_class = args.num_class
-    if len(args.class_names) > 0:
-        if os.path.isfile(args.class_names):
-            # try to open it to read class names
-            with open(args.class_names, 'r') as f:
-                class_names = [l.strip() for l in f.readlines()]
-        else:
-            class_names = [c.strip() for c in args.class_names.split(',')]
-        assert len(class_names) == num_class, str(len(class_names))
-        for name in class_names:
-            assert len(name) > 0
-    else:
-        class_names = None
-    return class_names
-
 if __name__ == '__main__':
     args = parse_args()
     # context list
     ctx = [mx.gpu(int(i)) for i in args.gpus.split(',') if i.strip()]
     ctx = [mx.cpu()] if not ctx else ctx
     # class names if applicable
-    class_names = parse_class_names(args)
+    class_names = args.class_names
+    num_class = len(class_names)
     # start training
     train_net(args.network, args.train_path,
-              args.num_class, args.batch_size,
+              num_class, args.batch_size,
               args.data_shape, [args.mean_r, args.mean_g, args.mean_b],
               args.resume, args.finetune, args.pretrained,
               args.epoch, args.prefix, ctx, args.begin_epoch, args.end_epoch,
