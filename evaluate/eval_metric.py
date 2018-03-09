@@ -1,5 +1,10 @@
 import mxnet as mx
 import numpy as np
+import os
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 
 class MApMetric(mx.metric.EvalMetric):
     """
@@ -15,8 +20,13 @@ class MApMetric(mx.metric.EvalMetric):
         optional, if provided, will print out AP for each class
     pred_idx : int
         prediction index in network output list
+    roc_output_path
+        optional, if provided, will save a ROC graph for each class
+    tensorboard_path
+        optional, if provided, will save a ROC graph to tensorboard
     """
-    def __init__(self, ovp_thresh=0.5, use_difficult=False, class_names=None, pred_idx=0):
+    def __init__(self, ovp_thresh=0.5, use_difficult=False, class_names=None,
+                 pred_idx=0, roc_output_path=None, tensorboard_path=None):
         super(MApMetric, self).__init__('mAP')
         if class_names is None:
             self.num = None
@@ -32,6 +42,25 @@ class MApMetric(mx.metric.EvalMetric):
         self.use_difficult = use_difficult
         self.class_names = class_names
         self.pred_idx = int(pred_idx)
+        self.roc_output_path = roc_output_path
+        self.tensorboard_path = tensorboard_path
+
+    def save_roc_graph(self, recall=None, prec=None, classkey=1, path=None, ap=None):
+        if not os.path.exists(path):
+            os.mkdir(path)
+        plot_path = os.path.join(path, 'roc_'+self.class_names[classkey])
+        if os.path.exists(plot_path):
+            os.remove(plot_path)
+        fig = plt.figure()
+        plt.title(self.class_names[classkey])
+        plt.plot(recall, prec, 'b', label='AP = %0.2f' % ap)
+        plt.legend(loc='lower right')
+        plt.xlim([0, 1])
+        plt.ylim([0, 1])
+        plt.ylabel('Precision')
+        plt.xlabel('Recall')
+        plt.savefig(plot_path)
+        plt.close(fig)
 
     def reset(self):
         """Clear the internal statistics to initial state."""
@@ -181,6 +210,8 @@ class MApMetric(mx.metric.EvalMetric):
         for k, v in self.records.items():
             recall, prec = self._recall_prec(v, self.counts[k])
             ap = self._average_precision(recall, prec)
+            if self.roc_output_path is not None:
+                self.save_roc_graph(recall=recall, prec=prec, classkey=k, path=self.roc_output_path, ap=ap)
             aps.append(ap)
             if self.num is not None and k < (self.num - 1):
                 self.sum_metric[k] = ap

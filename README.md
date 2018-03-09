@@ -12,6 +12,11 @@ The trained network at present runs for detecting 25 country flags printed on re
 
 ## Instructions to run the code
 ### Getting started
+* Option #1 - install using 'Docker'. if you are not familiar with this technology, there is a 'Docker' section below.
+you can get the latest image:
+```
+docker pull daviddocker78:mxnet-ssd:gpu_0.12.0_cuda9
+```
 * You will need python modules: `cv2`, `matplotlib` and `numpy`.
 If you use mxnet-python api, you probably have already got them.
 You can install them via pip or package manegers, such as `apt-get`:
