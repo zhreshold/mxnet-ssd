@@ -16,3 +16,8 @@ MIN_FLAGS = 1
 MAX_FLAGS = 2  # Currently supports upto 2 Maximum flags in one image. 
 
 BORDER_WHITE_AREA = 40 # How much percent of card should be covered with white area.
+
+IMAGE_SIZE = 224 # Input image size
+
+TOTAL_TRAIN_IMAGES = 120000 # Corresponds to how many train images to generate
+TOTAL_VALIDATION_IMAGES = 10000 # Corresponds to how many validation images to generate

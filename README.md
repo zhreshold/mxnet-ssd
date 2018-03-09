@@ -73,7 +73,10 @@ python data_utils/preprocess.py <src_folder_path> <dst_folder_path> --create-lab
 ```
 The output folder will contain all the resized images at dimension of 224x144 pixels. Update the contents of your label names in this [class_names.txt file](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/flags/input_data/class_names.txt) if you have not generated label file automatically (Arrange labels alphabetically).  
 
-Next you will have to download a dataset which mimics the best background situation you will have while you put your model for testing. I have used [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) which comprises of 2 lakh plus images of celebrity faces. Remember, you can't use CelebA dataset for commericial purposes. 
+Next you will have to download a dataset which mimics the best background situation you will have while you put your model for testing. I have used [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) which comprises of 2 lakh plus images of celebrity faces. Remember, you can't use CelebA dataset for commericial purposes. Resize all these background images to dimension of 224x224 pixels using the following command.
+```
+python data_utils/preprocess.py <src_folder_path> <dst_folder_path> --is-background=1
+```
 As these background image dataset is very likely to contain large number of images, I have optimised the code a bit and set the number of images in the dataset in [constants.py](https://github.com/Prasad9/Detect-Flags-SSD/blob/master/flags/data_utils/constants.py#L13). 
 
 Next, we are going to superimpose the flag files on these background images and add some random noise. You will get an output something like this after this step.

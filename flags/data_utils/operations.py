@@ -7,9 +7,30 @@ import random
 from math import ceil, floor, pi, sqrt
 
 from data_utils.write_xml_file import write_xml_file
-from data_utils.folder_names import LABEL
+from data_utils.constants import LABEL, IMAGE_SIZE, FLAG_HEIGHT, FLAG_WIDTH
 
-IMAGE_SIZE = 224 # Input image size
+# Should convert this entire project to class mechanism
+# Remove this global variable concept
+# The reason why this is made global is to allow continous flow of tqdm bar.
+# Otherwise upon creation of graph, the tqdm bar breaks and also 
+# continous allocation and deallocation of graph.
+img_placeholder = None
+resize_placeholder = None
+tf_img = None
+sess = None
+
+def instantiate_global_variables():
+    global img_placeholder, resize_placeholder, tf_img, sess
+
+    tf.reset_default_graph()
+    img_placeholder = tf.placeholder(tf.float32, (None, FLAG_HEIGHT, FLAG_WIDTH, 3))
+    resize_placeholder = tf.placeholder(tf.int32, (2))   # Resized height and width
+    tf_img = tf.image.resize_images(img_placeholder, resize_placeholder,
+                                        tf.image.ResizeMethod.NEAREST_NEIGHBOR)
+    sess = tf.Session()
+    sess.run(tf.global_variables_initializer())
+
+
 
 def tf_resize_images_with_white_bg(img, image_width, image_height, white_area_percent):
     # Estimate coordinates of the image inside white border based percentage area of white border.
@@ -20,12 +41,8 @@ def tf_resize_images_with_white_bg(img, image_width, image_height, white_area_pe
     width_start = ceil((image_width - resized_width) / 2.0)
     height_start = ceil((image_height - resized_height) / 2.0)
 
-    tf.reset_default_graph()
-    tf_img = tf.image.resize_images(img, (resized_height, resized_width),
-                                    tf.image.ResizeMethod.NEAREST_NEIGHBOR)
-    with tf.Session() as sess:
-        sess.run(tf.global_variables_initializer())
-        resized_img = sess.run(tf_img)
+    resized_img = sess.run(tf_img, feed_dict = {img_placeholder: img, 
+                                                resize_placeholder: [resized_height, resized_width]})
        
     return_img = np.ones((len(resized_img), image_height, image_width, 3), dtype = np.float32)
     for index, r_img in enumerate(resized_img):
@@ -114,6 +131,7 @@ def tf_generate_images(flag_file_names, flag_labels, bg_img_folder, save_img_fol
             current_celeb_index = 1
         celeb_file = '{}/{:06d}.png'.format(bg_img_folder, current_celeb_index)
         celeb_img = mpimg.imread(celeb_file)[:, :, :3]
+
         
         no_of_files = no_of_files_array[i]
         is_difficult_array, is_truncated_array, is_occluded_array = [], [], []

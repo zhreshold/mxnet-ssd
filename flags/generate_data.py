@@ -7,11 +7,12 @@ from sklearn.utils import shuffle
 import shutil
 import random
 
-from data_utils.operations import tf_generate_images, write_label_file_entries
+from data_utils.operations import tf_generate_images, write_label_file_entries, instantiate_global_variables
 # Not doing import * but doing manually. Instead make it a class
 from data_utils.constants import XML_FOLDER, GENERATED_DATA, TRAIN_FOLDER, VAL_FOLDER, TEST_FOLDER, LABEL
 from data_utils.constants import FLAG_HEIGHT, FLAG_WIDTH, MIN_FLAGS, MAX_FLAGS
 from data_utils.constants import CELEBA_TOTAL_FILES, BORDER_WHITE_AREA
+from data_utils.constants import TOTAL_TRAIN_IMAGES, TOTAL_VALIDATION_IMAGES
 
 BATCH_SIZE = 16
 
@@ -27,6 +28,10 @@ def generate_image_pipeline(X_files, y_data, save_folder, folder_type, bg_img_fo
 							start_celeb_index, total_base_images,
                             scales = [0.40, 0.43, 0.46, 0.48, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85],
                             angles = [0], angle_repeat_ratio = [1]):
+    # In case, the number of flags are very less, to keep the logic simple, 
+    # set the batch size not larger than number of flags.
+    effective_batch_size = min(BATCH_SIZE, len(y_data))
+
     # Folder for saving generated images.
     save_img_folder = '{}/{}_{}'.format(save_folder, GENERATED_DATA, folder_type)
     shutil.rmtree(save_img_folder, ignore_errors = True)
@@ -51,6 +56,8 @@ def generate_image_pipeline(X_files, y_data, save_folder, folder_type, bg_img_fo
     angle_images = [ceil(total_base_images * ratio) for ratio in angle_repeat_ratio]
     total_images = sum(angle_images)
     with tqdm(total = total_images) as pbar:
+        instantiate_global_variables()
+        
         # Generate total images needed at each angle.
         for angle_at, images_at_angle in zip(angles, angle_images):
             save_image_at = 0
@@ -67,11 +74,11 @@ def generate_image_pipeline(X_files, y_data, save_folder, folder_type, bg_img_fo
                 no_of_files_array = []
                 # Keep the ability of putting multiple flag files in one image only if scaling is below 0.5. 
                 if scale_at <= 0.5:
-                    for batch_counter in range(min(images_at_angle - save_image_at, BATCH_SIZE)):
+                    for batch_counter in range(min(images_at_angle - save_image_at, effective_batch_size)):
                         files_to_pick = random.randint(MIN_FLAGS, MAX_FLAGS)
                         no_of_files_array.append(files_to_pick)
                 else:
-                    no_of_files_array = [MIN_FLAGS] * min(images_at_angle - save_image_at, BATCH_SIZE)
+                    no_of_files_array = [MIN_FLAGS] * min(images_at_angle - save_image_at, effective_batch_size)
                 no_of_files = sum(no_of_files_array)
                 
                 # Collect the needed number of flag files. 
@@ -134,8 +141,7 @@ if __name__ == "__main__":
 	label_file_names, labels = shuffle(label_file_names, labels)
 
     # 1 and 190000 corresponds to from which image index you are referring to in background image dataset
-    # total_base_images values of 120000 and 10000 correspond to total number of images you would like to generate
-	generate_image_pipeline(label_file_names, labels, args.save_folder, TRAIN_FOLDER, args.bg_img_folder,
-							1, total_base_images = 120000)
-	generate_image_pipeline(label_file_names, labels, args.save_folder, VAL_FOLDER, args.bg_img_folder,
-							190000, total_base_images = 10000)
+	generate_image_pipeline(label_file_names, labels, args.save_folder, TRAIN_FOLDER, args.bg_img_folder, 
+							1, total_base_images = TOTAL_TRAIN_IMAGES)
+	generate_image_pipeline(label_file_names, labels, args.save_folder, VAL_FOLDER, args.bg_img_folder, 
+							190000, total_base_images = TOTAL_VALIDATION_IMAGES)
