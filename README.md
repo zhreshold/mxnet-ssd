@@ -16,6 +16,7 @@ remarkable traits of MXNet.
 * The result is almost identical to the original version. However, due to different implementation details, the results might differ slightly.
 
 ### What's new
+* **This repo is now deprecated, I am migrating to the latest [Gluon-CV](https://github.com/dmlc/gluon-cv) which is more user friendly and has a lot more algorithms in development. This repo will not receive active development, however, you can continue use it with the mxnet 1.1.0(probably 1.2.0).**
 * Now this repo is internally synchronized up to data with offical mxnet backend. `pip install mxnet` will work for this repo as well in most cases.
 * MobileNet pretrained model now provided.
 * Added multiple trained models.
