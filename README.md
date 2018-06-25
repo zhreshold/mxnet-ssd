@@ -62,7 +62,7 @@ remarkable traits of MXNet.
 * Option #1 - install using 'Docker'. if you are not familiar with this technology, there is a 'Docker' section below.
 you can get the latest image:
 ```
-docker pull daviddocker78:mxnet-ssd:gpu_0.12.0_cuda9
+docker pull daviddocker78/mxnet-ssd:gpu_0.12.0_cuda9
 ```
 * You will need python modules: `cv2`, `matplotlib` and `numpy`.
 If you use mxnet-python api, you probably have already got them.
