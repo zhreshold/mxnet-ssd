@@ -30,7 +30,7 @@ def get_scales(min_scale=0.2, max_scale=0.9,num_layers=6):
     step = int(np.floor((max_ratio - min_ratio) / (num_layers - 2)))
     min_sizes = []
     max_sizes = []
-    for ratio in xrange(min_ratio, max_ratio + 1, step):
+    for ratio in range(min_ratio, max_ratio + 1, step):
         min_sizes.append(ratio / 100.)
         max_sizes.append((ratio + step) / 100.)
     min_sizes = [int(100*min_scale / 2.0) / 100.0] + min_sizes
